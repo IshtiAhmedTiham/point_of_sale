@@ -1,7 +1,16 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
-app = FastAPI()
+from src.routers.v1.router import router
+from src.config.database import init_db
 
-@app.get("/")
-def home():
-    return "This is home page"
+
+@asynccontextmanager
+async def lifespan(app : FastAPI):
+    init_db()
+    yield
+
+app = FastAPI(lifespan=lifespan)
+
+app.include_router(router, prefix="/api/v1")
