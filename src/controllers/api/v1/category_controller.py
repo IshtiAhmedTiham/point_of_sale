@@ -1,7 +1,9 @@
-from typing import List, Annotated
+from typing import Annotated
 
 from fastapi import APIRouter, status, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
+from fastapi_pagination import Page, Params
+from fastapi_pagination.ext.sqlalchemy import paginate
 
 from src.config.database import get_db
 from src.models.category_model import CategoryModel
@@ -36,17 +38,18 @@ def create_category(data : CreateCategory = Depends(validate_unique_code), db : 
 
 
 
-@router.get("/", response_model=List[CategoryResponse], status_code=status.HTTP_200_OK)
+@router.get("/", response_model=Page[CategoryResponse], status_code=status.HTTP_200_OK)
 def read_category(filters : Annotated[CategoryFilter,Query()], db : Session = Depends(get_db)):
     category = db.query(CategoryModel)
 
-    if filters.name:
-        category = category.filter(CategoryModel.name.like(f"%{filters.name}%"))
+    if filters:
+        if filters.name:
+            category = category.filter(CategoryModel.name.like(f"%{filters.name}%"))
 
-    if filters.code:
-        category = category.filter(CategoryModel.code.like(f"%{filters.code}%"))
+        if filters.code:
+            category = category.filter(CategoryModel.code.like(f"%{filters.code}%"))
 
-    return category.all()
+    return paginate(category, params=Params(size=20))
 
 
 
