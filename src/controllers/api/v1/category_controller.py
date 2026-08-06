@@ -39,7 +39,7 @@ def create_category(data : CreateCategory = Depends(validate_unique_code), db : 
 
 
 @router.get("/", response_model=Page[CategoryResponse], status_code=status.HTTP_200_OK)
-def read_category(filters : Annotated[CategoryFilter,Query()], db : Session = Depends(get_db)):
+def read_category(filters : Annotated[CategoryFilter,Query()] = None, db : Session = Depends(get_db)):
     category = db.query(CategoryModel)
 
     if filters:
@@ -49,7 +49,7 @@ def read_category(filters : Annotated[CategoryFilter,Query()], db : Session = De
         if filters.code:
             category = category.filter(CategoryModel.code.like(f"%{filters.code}%"))
 
-    return paginate(category, params=Params(size=20))
+    return paginate(db, category, params=Params(size=20))
 
 
 

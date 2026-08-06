@@ -49,7 +49,7 @@ def create_sub_category(data : CreateSubCategory = Depends(validate_unique_code)
 
 
 @router.get("", response_model = Page[ResponseSubCategory], status_code = status.HTTP_200_OK)
-def read_sub_category(filters : Annotated[SubCategoryFilter, Query()], db : Session = Depends(get_db)):
+def read_sub_category(filters : Annotated[SubCategoryFilter, Query()] = None, db : Session = Depends(get_db)):
     sub_category = db.query(SubCategoryModel)
     
     if filters.name:
@@ -58,7 +58,7 @@ def read_sub_category(filters : Annotated[SubCategoryFilter, Query()], db : Sess
     if filters.code:
             sub_category = sub_category.filter(SubCategoryModel.code.like(f"%{filters.code}%"))
 
-    return paginate(sub_category, params=Params(size=20))
+    return paginate(db, sub_category, params=Params(size=20))
 
 
 
