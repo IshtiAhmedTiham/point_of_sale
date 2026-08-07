@@ -56,7 +56,7 @@ def read_sub_category(filters : Annotated[SubCategoryFilter, Query()] = None, db
         sub_category = sub_category.filter(SubCategoryModel.name.like(f"%{filters.name}%"))
 
     if filters.code:
-            sub_category = sub_category.filter(SubCategoryModel.code.like(f"%{filters.code}%"))
+        sub_category = sub_category.filter(SubCategoryModel.code.like(f"%{filters.code}%"))
 
     return paginate(db, sub_category, params=Params(size=20))
 
