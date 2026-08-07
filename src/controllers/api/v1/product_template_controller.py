@@ -18,7 +18,6 @@ from src.validators.product_template_validator import validate_unique_code
 router = APIRouter()
 
 
-
 @router.post("", response_model=ResponseProductTemplate, status_code=status.HTTP_201_CREATED)
 def create_product_template(data : CreateProductTemplate = Depends(validate_unique_code), db : Session = Depends(get_db)):
     category = db.query(CategoryModel).filter(CategoryModel.name == data.category_name).first()
@@ -89,7 +88,7 @@ def read_product_template(filters : Annotated[ProductTemplateFilters, Query()] =
 
 
 @router.put("/{id}", response_model=ResponseProductTemplate, status_code=status.HTTP_200_OK)
-def update_product_template(id : int, data : CreateProductTemplate = Depends(create_product_template_form), db : Session = Depends(get_db)):
+def update_product_template(id : int, data : CreateProductTemplate = Depends(validate_unique_code), db : Session = Depends(get_db)):
     product_template = db.query(ProductTemplateModel).filter(ProductTemplateModel.id == id).first()
 
     if not product_template:

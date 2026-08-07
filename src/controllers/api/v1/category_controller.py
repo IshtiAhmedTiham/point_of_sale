@@ -54,7 +54,7 @@ def read_category(filters : Annotated[CategoryFilter,Query()] = None, db : Sessi
 
 
 @router.put("/{id}", response_model=CategoryResponse, status_code=status.HTTP_200_OK)
-def update_category(id : int, data : CreateCategory = Depends(create_category_form), db : Session = Depends(get_db)):
+def update_category(id : int, data : CreateCategory = Depends(validate_unique_code), db : Session = Depends(get_db)):
     category = db.query(CategoryModel).filter(CategoryModel.id == id).first()
 
     if not category:

@@ -54,7 +54,7 @@ def read_brand(filters : Annotated[BrandFilters, Query()] = None, db : Session =
 
 
 @router.put("/{id}", response_model=ResponseBrand, status_code=status.HTTP_200_OK)
-def update_brand(id : int, data : CreateBrand = Depends(create_brand_form),  db : Session = Depends(get_db)):
+def update_brand(id : int, data : CreateBrand = Depends(validate_unique_email_and_phone),  db : Session = Depends(get_db)):
     brand = db.query(BrandModel).filter(BrandModel.id == id).first()
 
     if not brand:

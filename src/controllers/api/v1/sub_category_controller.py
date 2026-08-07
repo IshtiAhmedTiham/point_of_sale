@@ -63,7 +63,7 @@ def read_sub_category(filters : Annotated[SubCategoryFilter, Query()] = None, db
 
 
 @router.put("/{id}", response_model=ResponseSubCategory, status_code=status.HTTP_200_OK)
-def update_sub_category(id: int, data : CreateSubCategory = Depends(create_sub_category_form), db : Session = Depends(get_db)):
+def update_sub_category(id: int, data : CreateSubCategory = Depends(validate_unique_code), db : Session = Depends(get_db)):
     sub_category = db.query(SubCategoryModel).filter(SubCategoryModel.id == id).first()
 
     if not sub_category:
