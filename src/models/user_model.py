@@ -16,5 +16,5 @@ class UserModel(Base):
     branch = Column(String, nullable=False)
     phone = Column(String, nullable=False, index=True)
     address = Column(String, nullable=False)
-    image = Column(String, nullable=False)
+    image = Column(String, nullable=False, unique=True)
     status = Column(String, nullable=False, default="Active")

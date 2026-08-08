@@ -1,3 +1,4 @@
+import os
 from typing import Annotated
 
 from sqlalchemy.orm import Session
@@ -9,7 +10,7 @@ from src.config.database import get_db
 from src.models.user_model import UserModel
 from src.filters.user_filters import UserFilters
 from src.validators.user_validator import validate_user
-from src.schemas.user_schema import CreateUser, ResponseUser
+from src.schemas.user_schema import CreateUser, ResponseUser, create_user_form
 
 
 router = APIRouter()
@@ -44,6 +45,7 @@ def create_suplier(data : CreateUser = Depends(validate_user), db : Session = De
         return user
     
     except Exception:
+        os.remove(data.image)
         db.rollback()
         raise
 
@@ -64,7 +66,7 @@ def read_suplier(filters : Annotated[UserFilters, Query()] = None, db : Session 
 
 
 @router.put("/{id}", response_model=ResponseUser, status_code=status.HTTP_200_OK)
-def update_suplier(id : int, data : CreateUser = Depends(validate_user), db : Session = Depends(get_db)):
+def update_suplier(id : int, data : CreateUser = Depends(create_user_form), db : Session = Depends(get_db)):
     if not data.password == data.confirm_password:
         raise HTTPException(
             status_code = status.HTTP_422_UNPROCESSABLE_CONTENT,
@@ -79,8 +81,10 @@ def update_suplier(id : int, data : CreateUser = Depends(validate_user), db : Se
             detail = "User not found"
         )
 
-    update_data = data.model_dump()
+    file_path = user.image
+    os.remove(f"{file_path}")
 
+    update_data = data.model_dump()
     for key,value in update_data.items():
         setattr(user, key, value)
 
@@ -91,6 +95,7 @@ def update_suplier(id : int, data : CreateUser = Depends(validate_user), db : Se
         return user
     
     except Exception:
+        os.remove(data.image)
         db.rollback()
         raise
 
@@ -105,6 +110,9 @@ def delete_suplier(id : int, db : Session = Depends(get_db)):
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "User not found"
         )
+
+    file_path = user.image
+    os.remove(f"{file_path}")
 
     try:
         db.delete(user)

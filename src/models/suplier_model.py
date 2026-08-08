@@ -14,6 +14,6 @@ class SuplierModel(Base):
     address = Column(String, nullable=False)
     account_no = Column(String, nullable=False)
     opening_balance = Column(Float, nullable=False)
-    image = Column(String, nullable=False)
+    image = Column(String, nullable=False, unique=True)
 
     brand = relationship("BrandModel")

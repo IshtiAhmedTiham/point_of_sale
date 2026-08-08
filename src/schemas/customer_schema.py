@@ -1,5 +1,6 @@
 import os
 import shutil
+from datetime import datetime, timezone
 
 from fastapi import Form, UploadFile, File
 from pydantic import BaseModel, EmailStr
@@ -29,7 +30,7 @@ def create_customer_form(
 
     os.makedirs("uploads/customer", exist_ok=True)
 
-    file_path = f"uploads/customer/{icon.filename}"
+    file_path = f"uploads/customer/{datetime.now(timezone.utc)}{icon.filename}"
     with open(file_path, "wb") as file:
         shutil.copyfileobj(icon.file, file)
 
@@ -44,7 +45,6 @@ def create_customer_form(
         taxable = taxable,
         icon = file_path
     )
-
 
 
 class CustomerResponse(BaseModel):

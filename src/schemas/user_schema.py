@@ -1,6 +1,7 @@
 import os
 import shutil
 from typing import Optional
+from datetime import datetime, timezone
 
 from pydantic import BaseModel, EmailStr
 from fastapi import Form, UploadFile, File
@@ -34,7 +35,7 @@ def create_user_form(
 
     os.makedirs("uploads/user", exist_ok=True)
 
-    file_path = f"uploads/user/{image.filename}"
+    file_path = f"uploads/user/{datetime.now(timezone.utc)}{image.filename}"
     with open(file_path, "wb") as file:
         shutil.copyfileobj(image.file, file)
 

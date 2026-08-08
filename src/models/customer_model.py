@@ -15,4 +15,4 @@ class CustomerModel(Base):
     opening_balance = Column(Float, nullable=False)
     discount = Column(Float, nullable=False)
     taxable = Column(Float, nullable=False)
-    icon = Column(String, nullable=False)
+    icon = Column(String, nullable=False, unique=True)

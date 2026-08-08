@@ -1,18 +1,19 @@
+import os
 from typing import Annotated
 
-from fastapi import APIRouter, status, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, status, Depends, HTTPException, Query
 
-from src.schemas.product_template_schema import CreateProductTemplate, ResponseProductTemplate, create_product_template_form
 from src.config.database import get_db
-from src.models.product_template_model import ProductTemplateModel
+from src.models.brand_model import BrandModel
 from src.models.category_model import CategoryModel
 from src.models.sub_category_model import SubCategoryModel
-from src.models.brand_model import BrandModel
+from src.models.product_template_model import ProductTemplateModel
 from src.filters.product_template_filters import ProductTemplateFilters
 from src.validators.product_template_validator import validate_unique_code
+from src.schemas.product_template_schema import CreateProductTemplate, ResponseProductTemplate, create_product_template_form
 
 
 router = APIRouter()
@@ -68,6 +69,7 @@ def create_product_template(data : CreateProductTemplate = Depends(validate_uniq
         return product_template
     
     except Exception:
+        os.remove(data.image)
         db.rollback()
         raise
 
@@ -88,7 +90,7 @@ def read_product_template(filters : Annotated[ProductTemplateFilters, Query()] =
 
 
 @router.put("/{id}", response_model=ResponseProductTemplate, status_code=status.HTTP_200_OK)
-def update_product_template(id : int, data : CreateProductTemplate = Depends(validate_unique_code), db : Session = Depends(get_db)):
+def update_product_template(id : int, data : CreateProductTemplate = Depends(create_product_template_form), db : Session = Depends(get_db)):
     product_template = db.query(ProductTemplateModel).filter(ProductTemplateModel.id == id).first()
 
     if not product_template:
@@ -124,6 +126,9 @@ def update_product_template(id : int, data : CreateProductTemplate = Depends(val
             detail="Brand not found"
         )
 
+    file_path = product_template.image
+    os.remove(f"{file_path}")
+
     update_data = data.model_dump(exclude={"category_name", "sub_category_name", "brand_name"})
     for key, value in update_data.items():
         setattr(product_template, key, value)
@@ -140,6 +145,7 @@ def update_product_template(id : int, data : CreateProductTemplate = Depends(val
         return product_template
     
     except Exception:
+        os.remove(data.image)
         db.rollback()
         raise
 
@@ -154,6 +160,10 @@ def delete_product_template(id : int, db : Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Data not found"
         )
+
+    
+    file_path = product_template.image
+    os.remove(f"{file_path}")
 
     try:
         db.delete(product_template)

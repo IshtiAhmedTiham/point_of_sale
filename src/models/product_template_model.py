@@ -17,7 +17,7 @@ class ProductTemplateModel(Base):
     tax = Column(Float, nullable=False)
     description = Column(String, nullable=False)
     openstock = Column(String, nullable=False)
-    image = Column(String, nullable=False)
+    image = Column(String, nullable=False, unique=True)
 
     category = relationship("CategoryModel")
     sub_category = relationship("SubCategoryModel")

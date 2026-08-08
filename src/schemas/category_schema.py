@@ -1,6 +1,7 @@
 import os
 import shutil
 from typing import Optional
+from datetime import datetime, timezone
 
 from fastapi import Form, UploadFile, File
 from pydantic import BaseModel
@@ -22,7 +23,7 @@ def create_category_form(
     status : Optional[str] = Form("Active")):
     
     os.makedirs("uploads/category", exist_ok=True)
-    file_path = f"uploads/category/{icon.filename}"
+    file_path = f"uploads/category/{datetime.now(timezone.utc)}{icon.filename}"
 
     with open(file_path, "wb") as file:
         shutil.copyfileobj(icon.file, file)

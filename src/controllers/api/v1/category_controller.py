@@ -1,15 +1,18 @@
+import os
 from typing import Annotated
 
-from fastapi import APIRouter, status, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fastapi import APIRouter, status, Depends, Query, HTTPException
 
 from src.config.database import get_db
 from src.models.category_model import CategoryModel
-from src.schemas.category_schema import CreateCategory, CategoryResponse, create_category_form
-from src.validators.category_validator import validate_unique_code
 from src.filters.category_filters import CategoryFilter
+from src.models.sub_category_model import SubCategoryModel
+from src.models.product_template_model import ProductTemplateModel
+from src.validators.category_validator import validate_unique_code
+from src.schemas.category_schema import CreateCategory, CategoryResponse, create_category_form
 
 
 router = APIRouter()
@@ -33,6 +36,7 @@ def create_category(data : CreateCategory = Depends(validate_unique_code), db : 
         return category
     
     except Exception:
+        os.remove(data.icon)
         db.rollback()
         raise
 
@@ -54,7 +58,7 @@ def read_category(filters : Annotated[CategoryFilter,Query()] = None, db : Sessi
 
 
 @router.put("/{id}", response_model=CategoryResponse, status_code=status.HTTP_200_OK)
-def update_category(id : int, data : CreateCategory = Depends(validate_unique_code), db : Session = Depends(get_db)):
+def update_category(id : int, data : CreateCategory = Depends(create_category_form), db : Session = Depends(get_db)):
     category = db.query(CategoryModel).filter(CategoryModel.id == id).first()
 
     if not category:
@@ -62,6 +66,9 @@ def update_category(id : int, data : CreateCategory = Depends(validate_unique_co
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Data Not Found"
         )
+    
+    file_path = category.icon
+    os.remove(f"{file_path}")
 
     updated_data = data.model_dump()
     for key,value in updated_data.items():
@@ -74,6 +81,7 @@ def update_category(id : int, data : CreateCategory = Depends(validate_unique_co
         return category
     
     except Exception:
+        os.remove(data.icon)
         db.rollback()
         raise
 
@@ -87,6 +95,29 @@ def delete_category(id : int, db : Session = Depends(get_db)):
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Data Not Found"
         )
+    
+    
+    sub_category = db.query(SubCategoryModel).filter(SubCategoryModel.category_id == id).first()
+
+    if sub_category:
+        raise HTTPException(
+            status_code = status.HTTP_409_CONFLICT,
+            detail = "In Sub Category, Category is exists"
+        )
+
+
+    product_template = db.query(ProductTemplateModel).filter(ProductTemplateModel.category_id == id).first()
+    
+    if product_template:
+        raise HTTPException(
+            status_code = status.HTTP_409_CONFLICT,
+            detail = "In Product Template, Category is exists"
+        )
+    
+
+    file_path = category.icon
+    os.remove(f"{file_path}")
+
 
     try:
         db.delete(category)

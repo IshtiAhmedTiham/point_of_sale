@@ -1,3 +1,4 @@
+import os
 from typing import Annotated
 
 from sqlalchemy.orm import Session
@@ -10,7 +11,7 @@ from src.models.brand_model import BrandModel
 from src.models.suplier_model import SuplierModel
 from src.filters.suplier_filters import SuplierFilters
 from src.validators.suplier_validator import validate_suplier
-from src.schemas.suplier_schema import CreateSuplier, ResponseSuplier
+from src.schemas.suplier_schema import CreateSuplier, ResponseSuplier, create_suplier_form
 
 
 router = APIRouter()
@@ -44,6 +45,7 @@ def create_suplier(data : CreateSuplier = Depends(validate_suplier), db : Sessio
         return suplier
     
     except Exception:
+        os.remove(data.image)
         db.rollback()
         raise
 
@@ -64,7 +66,7 @@ def read_suplier(filters : Annotated[SuplierFilters, Query()] = None, db : Sessi
 
 
 @router.put("/{id}", response_model=ResponseSuplier, status_code=status.HTTP_200_OK)
-def update_suplier(id : int, data : CreateSuplier = Depends(validate_suplier), db : Session = Depends(get_db)):
+def update_suplier(id : int, data : CreateSuplier = Depends(create_suplier_form), db : Session = Depends(get_db)):
     suplier = db.query(SuplierModel).filter(SuplierModel.id == id).first()
 
     if not suplier:
@@ -81,10 +83,12 @@ def update_suplier(id : int, data : CreateSuplier = Depends(validate_suplier), d
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Brand not found"
         )
+
     
+    file_path = suplier.image
+    os.remove(f"{file_path}")
 
     update_data = data.model_dump(exclude={"brand_name"})
-
     for key,value in update_data.items():
         setattr(suplier, key, value)
 
@@ -97,6 +101,7 @@ def update_suplier(id : int, data : CreateSuplier = Depends(validate_suplier), d
         return suplier
     
     except Exception:
+        os.remove(data.image)
         db.rollback()
         raise
 
@@ -111,6 +116,9 @@ def delete_suplier(id : int, db : Session = Depends(get_db)):
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Suplier not found"
         )
+
+    file_path = suplier.image
+    os.remove(f"{file_path}")
 
     try:
         db.delete(suplier)

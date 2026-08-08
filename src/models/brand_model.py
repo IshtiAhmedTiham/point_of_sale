@@ -11,5 +11,5 @@ class BrandModel(Base):
     email = Column(String, nullable=False, unique=True, index=True)
     phone = Column(String, nullable=False, unique=True, index=True)
     address = Column(String, nullable=False)
-    logo = Column(String, nullable=False)
+    logo = Column(String, nullable=False, unique=True)
     status = Column(String, nullable=False, default="Active")

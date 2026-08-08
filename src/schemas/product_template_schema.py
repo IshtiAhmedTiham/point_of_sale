@@ -1,5 +1,6 @@
 import os
 import shutil
+from datetime import datetime, timezone
 
 from fastapi import UploadFile, File, Form
 from pydantic import BaseModel
@@ -32,7 +33,7 @@ def create_product_template_form(
     image : UploadFile = File(...)):
 
     os.makedirs("uploads/product_template", exist_ok=True)
-    file_path = f"uploads/product_template/{image.filename}"
+    file_path = f"uploads/product_template/{datetime.now(timezone.utc)}{image.filename}"
 
     with open(file_path, "wb") as file:
         shutil.copyfileobj(image.file, file)
@@ -50,7 +51,6 @@ def create_product_template_form(
         openstock = openstock,
         image = file_path
     )
-
 
 
 class ResponseProductTemplate(BaseModel):

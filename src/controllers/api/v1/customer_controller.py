@@ -1,15 +1,20 @@
-from fastapi import APIRouter, status, Depends, Query, HTTPException
-from src.schemas.customer_schema import CreateCustomer, CustomerResponse, create_customer_form
-from src.models.customer_model import CustomerModel
-from src.config.database import get_db
+import os
+from typing import Annotated
+
 from sqlalchemy.orm import Session
-from src.validators.customer_validator import validators
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
-from typing import Annotated
+from fastapi import APIRouter, status, Depends, Query, HTTPException
+
+from src.config.database import get_db
+from src.models.customer_model import CustomerModel
 from src.filters.customer_filters import CustomerFilter
+from src.validators.customer_validator import validators
+from src.schemas.customer_schema import CreateCustomer, CustomerResponse, create_customer_form
+
 
 router = APIRouter()
+
 
 @router.post("", response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
 def create_customer(data : CreateCustomer = Depends(validators), db : Session = Depends(get_db)):
@@ -58,7 +63,7 @@ def read_customer(filters : Annotated[CustomerFilter, Query()] = None, db : Sess
 
 
 @router.put("/{id}", response_model=CustomerResponse, status_code=status.HTTP_200_OK)
-def update_customer(id: int, data : CreateCustomer = Depends(validators), db : Session = Depends(get_db)):
+def update_customer(id: int, data : CreateCustomer = Depends(create_customer_form), db : Session = Depends(get_db)):
     customer = db.query(CustomerModel).filter(CustomerModel.id == id).first()
 
     if not customer:
@@ -66,6 +71,9 @@ def update_customer(id: int, data : CreateCustomer = Depends(validators), db : S
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Data not found"
         )
+
+    file_path = customer.icon
+    os.remove(f"{file_path}")
 
     update_data = data.model_dump()
     for key,value in update_data.items():
@@ -78,6 +86,7 @@ def update_customer(id: int, data : CreateCustomer = Depends(validators), db : S
         return customer
 
     except Exception:
+        os.remove(data.icon)
         db.rollback()
         raise
 
@@ -92,6 +101,9 @@ def delete_customer(id : int, db : Session = Depends(get_db)):
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Data not found"
         )
+    
+    file_path = customer.icon
+    os.remove(f"{file_path}")
 
     try:
         db.delete(customer)
