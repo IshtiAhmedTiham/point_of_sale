@@ -1,9 +1,10 @@
 import os
 import shutil
+from typing import Optional
 from datetime import datetime, timezone
 
-from fastapi import UploadFile, File, Form
 from pydantic import BaseModel
+from fastapi import UploadFile, File, Form
 
 
 class CreateProductTemplate(BaseModel):
@@ -17,6 +18,7 @@ class CreateProductTemplate(BaseModel):
     description : str
     openstock : str
     image : str
+    deleted_at : Optional[datetime] = None
 
 
 
@@ -65,3 +67,4 @@ class ResponseProductTemplate(BaseModel):
     description : str
     openstock : str
     image : str
+    deleted_at : Optional[datetime] = None

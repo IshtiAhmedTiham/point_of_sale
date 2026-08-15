@@ -18,6 +18,8 @@ class CreateUser(BaseModel):
     address : str
     image : str
     status : Optional[str] = "Active"
+    deleted_at : Optional[datetime] = None
+
 
 
 def create_user_form(
@@ -34,8 +36,8 @@ def create_user_form(
 
 
     os.makedirs("uploads/user", exist_ok=True)
-
     file_path = f"uploads/user/{datetime.now(timezone.utc)}{image.filename}"
+
     with open(file_path, "wb") as file:
         shutil.copyfileobj(image.file, file)
 
@@ -66,3 +68,4 @@ class ResponseUser(BaseModel):
     address : str
     image : str
     status : str
+    deleted_at : Optional[datetime] = None

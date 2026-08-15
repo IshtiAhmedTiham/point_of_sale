@@ -1,5 +1,7 @@
 import os
+import shutil
 from typing import Annotated
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 from fastapi_pagination import Page, Params
@@ -25,7 +27,8 @@ def create_category(data : CreateCategory = Depends(validate_unique_code), db : 
         code = data.code,
         description = data.description,
         icon = data.icon,
-        status = data.status
+        status = data.status,
+        deleted_at = data.deleted_at
     )
 
     try:
@@ -44,14 +47,13 @@ def create_category(data : CreateCategory = Depends(validate_unique_code), db : 
 
 @router.get("/", response_model=Page[CategoryResponse], status_code=status.HTTP_200_OK)
 def read_category(filters : Annotated[CategoryFilter,Query()] = None, db : Session = Depends(get_db)):
-    category = db.query(CategoryModel)
+    category = db.query(CategoryModel).filter(CategoryModel.deleted_at.is_(None))
 
-    if filters:
-        if filters.name:
-            category = category.filter(CategoryModel.name.like(f"%{filters.name}%"))
+    if filters.name:
+        category = category.filter(CategoryModel.name.like(f"%{filters.name}%"))
 
-        if filters.code:
-            category = category.filter(CategoryModel.code.like(f"%{filters.code}%"))
+    if filters.code:
+        category = category.filter(CategoryModel.code.like(f"%{filters.code}%"))
 
     return paginate(db, category, params=Params(size=20))
 
@@ -59,7 +61,7 @@ def read_category(filters : Annotated[CategoryFilter,Query()] = None, db : Sessi
 
 @router.put("/{id}", response_model=CategoryResponse, status_code=status.HTTP_200_OK)
 def update_category(id : int, data : CreateCategory = Depends(create_category_form), db : Session = Depends(get_db)):
-    category = db.query(CategoryModel).filter(CategoryModel.id == id).first()
+    category = db.query(CategoryModel).filter(CategoryModel.id == id, CategoryModel.deleted_at.is_(None)).first()
 
     if not category:
         raise HTTPException(
@@ -68,28 +70,29 @@ def update_category(id : int, data : CreateCategory = Depends(create_category_fo
         )
     
     file_path = category.icon
-    os.remove(f"{file_path}")
-
-    updated_data = data.model_dump()
-    for key,value in updated_data.items():
-        setattr(category,key,value)
 
     try:
+        updated_data = data.model_dump()
+        for key,value in updated_data.items():
+            setattr(category,key,value)
+
         db.commit()
         db.refresh(category)
+
+        os.remove(f"{file_path}")
 
         return category
     
     except Exception:
-        os.remove(data.icon)
         db.rollback()
+        os.remove(data.icon)
         raise
+
 
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
 def delete_category(id : int, db : Session = Depends(get_db)):
-    category = db.query(CategoryModel).filter(CategoryModel.id == id).first()
-
+    category = db.query(CategoryModel).filter(CategoryModel.id == id, CategoryModel.deleted_at.is_(None)).first()
     if not category:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
@@ -97,8 +100,7 @@ def delete_category(id : int, db : Session = Depends(get_db)):
         )
     
     
-    sub_category = db.query(SubCategoryModel).filter(SubCategoryModel.category_id == id).first()
-
+    sub_category = db.query(SubCategoryModel).filter(SubCategoryModel.category_id == id, SubCategoryModel.deleted_at.is_(None)).first()
     if sub_category:
         raise HTTPException(
             status_code = status.HTTP_409_CONFLICT,
@@ -106,8 +108,7 @@ def delete_category(id : int, db : Session = Depends(get_db)):
         )
 
 
-    product_template = db.query(ProductTemplateModel).filter(ProductTemplateModel.category_id == id).first()
-    
+    product_template = db.query(ProductTemplateModel).filter(ProductTemplateModel.category_id == id, ProductTemplateModel.deleted_at.is_(None)).first()
     if product_template:
         raise HTTPException(
             status_code = status.HTTP_409_CONFLICT,
@@ -115,13 +116,20 @@ def delete_category(id : int, db : Session = Depends(get_db)):
         )
     
 
-    file_path = category.icon
-    os.remove(f"{file_path}")
-
-
     try:
-        db.delete(category)
+        file_path = category.icon
+
+        category.deleted_at = datetime.now(timezone.utc)
+
         db.commit()
+        db.refresh(category)
+
+        file = os.path.basename(f"{file_path}")
+
+        os.makedirs("deleted_file/category", exist_ok=True)
+        destination = f"deleted_file/category/{file}"
+
+        shutil.move(f"{file_path}", destination)
 
         return ("status : Data successfuly deleted")
     

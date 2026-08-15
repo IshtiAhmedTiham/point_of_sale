@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -8,9 +10,11 @@ from src.schemas.user_schema import CreateUser, create_user_form
 
 
 def validate_user(data : CreateUser = Depends(create_user_form), db : Session = Depends(get_db)):
-    user = db.query(UserModel).filter(or_(UserModel.email == data.email, UserModel.phone == data.phone)).first()
+    user = db.query(UserModel).filter(or_(UserModel.email == data.email, UserModel.phone == data.phone), UserModel.deleted_at == None).first()
 
     if user:
+        os.remove(f"{data.image}")
+
         if user.email == data.email:
             raise HTTPException(
                 status_code = status.HTTP_409_CONFLICT,

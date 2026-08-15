@@ -1,5 +1,7 @@
 import os
+import shutil
 from typing import Annotated
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 from fastapi_pagination import Page, Params
@@ -20,7 +22,7 @@ router = APIRouter()
 
 @router.post("", response_model = ResponseSubCategory, status_code=status.HTTP_201_CREATED)
 def create_sub_category(data : CreateSubCategory = Depends(validate_unique_code), db : Session = Depends(get_db)):
-    category = db.query(CategoryModel).filter(CategoryModel.name == data.category_name).first()
+    category = db.query(CategoryModel).filter(CategoryModel.name == data.category_name, CategoryModel.deleted_at.is_(None)).first()
 
     if not category:
         raise HTTPException(
@@ -34,7 +36,8 @@ def create_sub_category(data : CreateSubCategory = Depends(validate_unique_code)
         code = data.code,
         icon = data.icon,
         description =  data.description,
-        status = data.status
+        status = data.status,
+        deleted_at = data.deleted_at
     )
 
     try:
@@ -53,7 +56,7 @@ def create_sub_category(data : CreateSubCategory = Depends(validate_unique_code)
 
 @router.get("", response_model = Page[ResponseSubCategory], status_code = status.HTTP_200_OK)
 def read_sub_category(filters : Annotated[SubCategoryFilter, Query()] = None, db : Session = Depends(get_db)):
-    sub_category = db.query(SubCategoryModel)
+    sub_category = db.query(SubCategoryModel).filter(SubCategoryModel.deleted_at.is_(None))
     
     if filters.name:
         sub_category = sub_category.filter(SubCategoryModel.name.like(f"%{filters.name}%"))
@@ -67,16 +70,14 @@ def read_sub_category(filters : Annotated[SubCategoryFilter, Query()] = None, db
 
 @router.put("/{id}", response_model=ResponseSubCategory, status_code=status.HTTP_200_OK)
 def update_sub_category(id: int, data : CreateSubCategory = Depends(create_sub_category_form), db : Session = Depends(get_db)):
-    sub_category = db.query(SubCategoryModel).filter(SubCategoryModel.id == id).first()
-
+    sub_category = db.query(SubCategoryModel).filter(SubCategoryModel.id == id, SubCategoryModel.deleted_at.is_(None)).first()
     if not sub_category:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Data not found"
         )
 
-    category = db.query(CategoryModel).filter(CategoryModel.name == data.category_name).first()
-    
+    category = db.query(CategoryModel).filter(CategoryModel.name == data.category_name, CategoryModel.deleted_at.is_(None)).first()
     if not category:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
@@ -84,51 +85,59 @@ def update_sub_category(id: int, data : CreateSubCategory = Depends(create_sub_c
         )
 
     file_path = sub_category.icon
-    os.remove(f"{file_path}")
-
-    update_data = data.model_dump(exclude={"category_name"})
-    for key,value in update_data.items():
-        setattr(sub_category,key,value)
-
-    sub_category.category_id = category.id
 
     try:
+        update_data = data.model_dump(exclude={"category_name"})
+        for key,value in update_data.items():
+            setattr(sub_category,key,value)
+
+        sub_category.category_id = category.id
+
         db.commit()
         db.refresh(sub_category)
+
+        os.remove(f"{file_path}")
 
         return sub_category
 
     except Exception:
-        os.remove(data.icon)
         db.rollback()
+        os.remove(data.icon)
         raise
 
     
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
 def delete_sub_category(id : int, db : Session = Depends(get_db)):
-    sub_category = db.query(SubCategoryModel).filter(SubCategoryModel.id == id).first()
-
+    sub_category = db.query(SubCategoryModel).filter(SubCategoryModel.id == id, SubCategoryModel.deleted_at.is_(None)).first()
     if not sub_category:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Data Not Found"
         )
 
-    product_template = db.query(ProductTemplateModel).filter(ProductTemplateModel.sub_category == id).first()
-    
+    product_template = db.query(ProductTemplateModel).filter(ProductTemplateModel.sub_category_id == id, ProductTemplateModel.deleted_at.is_(None)).first()
     if product_template:
         raise HTTPException(
             status_code = status.HTTP_409_CONFLICT,
             detail = "In Product Template, Sub Category is exists"
         )
 
-    file_path = sub_category.icon
-    os.remove(f"{file_path}")
 
     try:
-        db.delete(sub_category)
+        file_path = sub_category.icon
+
+        sub_category.deleted_at = datetime.now(timezone.utc)
+
         db.commit()
+        db.refresh(sub_category)
+
+        file = os.path.basename(f"{file_path}")
+
+        os.makedirs("deleted_file/sub_category", exist_ok=True)
+        destination = f"deleted_file/sub_category/{file}"
+
+        shutil.move(f"{file_path}", destination)
 
         return ("status : Data successfuly deleted")
     

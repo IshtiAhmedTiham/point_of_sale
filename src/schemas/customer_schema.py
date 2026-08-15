@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import Optional
 from datetime import datetime, timezone
 
 from fastapi import Form, UploadFile, File
@@ -15,6 +16,7 @@ class CreateCustomer(BaseModel):
     discount : float
     taxable : float
     icon : str
+    deleted_at : Optional[datetime] = None
 
 
 def create_customer_form(
@@ -29,8 +31,8 @@ def create_customer_form(
     icon : UploadFile = File(...)):
 
     os.makedirs("uploads/customer", exist_ok=True)
-
     file_path = f"uploads/customer/{datetime.now(timezone.utc)}{icon.filename}"
+
     with open(file_path, "wb") as file:
         shutil.copyfileobj(icon.file, file)
 
@@ -58,3 +60,4 @@ class CustomerResponse(BaseModel):
     discount : float
     taxable : float
     icon : str
+    deleted_at : Optional[datetime] = None

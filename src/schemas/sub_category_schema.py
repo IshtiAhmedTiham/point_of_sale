@@ -13,6 +13,7 @@ class CreateSubCategory(BaseModel):
     icon : str
     description : str
     status : Optional[str] = "Active"
+    deleted_at : Optional[datetime] = None
 
 
 
@@ -49,3 +50,4 @@ class ResponseSubCategory(BaseModel):
     icon : str
     description : str
     status : str
+    deleted_at : Optional[datetime] = None

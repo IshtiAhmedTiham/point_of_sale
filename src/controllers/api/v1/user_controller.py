@@ -1,5 +1,7 @@
 import os
+import shutil
 from typing import Annotated
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 from fastapi_pagination import Page, Params
@@ -17,7 +19,7 @@ router = APIRouter()
 
 
 @router.post("", response_model=ResponseUser, status_code=status.HTTP_201_CREATED)
-def create_suplier(data : CreateUser = Depends(validate_user), db : Session = Depends(get_db)):
+def create_user(data : CreateUser = Depends(validate_user), db : Session = Depends(get_db)):
     if not data.password == data.confirm_password:
         raise HTTPException(
             status_code = status.HTTP_422_UNPROCESSABLE_CONTENT,
@@ -34,7 +36,8 @@ def create_suplier(data : CreateUser = Depends(validate_user), db : Session = De
         phone = data.phone,
         address = data.address,
         image = data.address,
-        status = data.status
+        status = data.status,
+        deleted_at = data.deleted_at
     )
 
     try:
@@ -52,8 +55,8 @@ def create_suplier(data : CreateUser = Depends(validate_user), db : Session = De
 
 
 @router.get("", response_model=Page[ResponseUser], status_code=status.HTTP_200_OK)
-def read_suplier(filters : Annotated[UserFilters, Query()] = None, db : Session = Depends(get_db)):
-    suplier = db.query(UserModel)
+def read_user(filters : Annotated[UserFilters, Query()] = None, db : Session = Depends(get_db)):
+    suplier = db.query(UserModel).filter(UserModel.deleted_at.is_(None))
 
     if filters.name:
         suplier = suplier.filter(UserModel.name.like(f"%{filters.name}%"))
@@ -66,60 +69,82 @@ def read_suplier(filters : Annotated[UserFilters, Query()] = None, db : Session 
 
 
 @router.put("/{id}", response_model=ResponseUser, status_code=status.HTTP_200_OK)
-def update_suplier(id : int, data : CreateUser = Depends(create_user_form), db : Session = Depends(get_db)):
-    if not data.password == data.confirm_password:
+def update_user(id: int, data: CreateUser = Depends(create_user_form), db: Session = Depends(get_db)):
+    if data.password != data.confirm_password:
         raise HTTPException(
-            status_code = status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail = "Password not match"
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Password not match"
         )
 
-    user = db.query(UserModel).filter(UserModel.id == id).first()
-
+    user = (db.query(UserModel).filter(UserModel.id == id, UserModel.deleted_at.is_(None)).first())
     if not user:
+        if data.image and os.path.exists(data.image):
+            os.remove(data.image)
+
         raise HTTPException(
-            status_code = status.HTTP_404_NOT_FOUND,
-            detail = "User not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
         )
 
-    file_path = user.image
-    os.remove(f"{file_path}")
-
-    update_data = data.model_dump()
-    for key,value in update_data.items():
-        setattr(user, key, value)
+    old_file_path = user.image
 
     try:
+        updated_data = data.model_dump(exclude={"image"})
+
+        for key, value in updated_data.items():
+            setattr(user, key, value)
+
+        user.image = data.image
+
         db.commit()
         db.refresh(user)
 
-        return user
-    
-    except Exception:
-        os.remove(data.image)
-        db.rollback()
-        raise
+        if (data.image and old_file_path != data.image and os.path.exists(old_file_path)):
+            os.remove(old_file_path)
 
+        return user
+
+    except Exception:
+        db.rollback()
+
+        if data.image and os.path.exists(data.image):
+            os.remove(data.image)
+
+        raise
+    
+    
 
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
-def delete_suplier(id : int, db : Session = Depends(get_db)):
-    user = db.query(UserModel).filter(UserModel.id == id).first()
+def delete_user(id: int, db: Session = Depends(get_db)):
+    user = (db.query(UserModel).filter(UserModel.id == id, UserModel.deleted_at.is_(None)).first())
 
     if not user:
         raise HTTPException(
-            status_code = status.HTTP_404_NOT_FOUND,
-            detail = "User not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
         )
 
-    file_path = user.image
-    os.remove(f"{file_path}")
-
     try:
-        db.delete(user)
-        db.commit()
+        file_path = user.image
 
-        return {"stauts" : "Data successfuly deleted"}
-    
+        user.deleted_at = datetime.now(timezone.utc)
+
+        db.commit()
+        db.refresh(user)
+
+        if file_path and os.path.exists(file_path):
+            filename = os.path.basename(file_path)
+
+            os.makedirs("deleted_file/user", exist_ok=True)
+
+            destination = os.path.join("deleted_file/user", filename)
+            shutil.move(f"{file_path}", destination)
+
+        return {
+            "status": "Data successfully deleted"
+        }
+
     except Exception:
         db.rollback()
         raise

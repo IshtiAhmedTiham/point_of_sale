@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
 
 from src.config.database import Base
 
@@ -9,7 +9,7 @@ class ProductTemplateModel(Base):
 
     id = Column(Integer, nullable=False, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    code = Column(String, nullable=False, unique=True)
+    code = Column(String, nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
     sub_category_id = Column(Integer, ForeignKey("sub_categories.id"), nullable=False)
     brand_id = Column(Integer, ForeignKey("brands.id"), nullable=False)
@@ -17,7 +17,8 @@ class ProductTemplateModel(Base):
     tax = Column(Float, nullable=False)
     description = Column(String, nullable=False)
     openstock = Column(String, nullable=False)
-    image = Column(String, nullable=False, unique=True)
+    image = Column(String, nullable=False)
+    deleted_at = Column(DateTime, nullable=True)
 
     category = relationship("CategoryModel")
     sub_category = relationship("SubCategoryModel")

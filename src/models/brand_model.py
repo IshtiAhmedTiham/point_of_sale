@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, DateTime
 
 from src.config.database import Base
 
@@ -8,8 +8,9 @@ class BrandModel(Base):
 
     id = Column(Integer, nullable=False ,primary_key=True, index=True)
     name = Column(String, nullable=False)
-    email = Column(String, nullable=False, unique=True, index=True)
-    phone = Column(String, nullable=False, unique=True, index=True)
+    email = Column(String, nullable=False, index=True)
+    phone = Column(String, nullable=False, index=True)
     address = Column(String, nullable=False)
-    logo = Column(String, nullable=False, unique=True)
+    logo = Column(String, nullable=False,)
     status = Column(String, nullable=False, default="Active")
+    deleted_at = Column(DateTime, nullable=True)

@@ -3,8 +3,8 @@ import shutil
 from typing import Optional
 from datetime import datetime, timezone
 
-from fastapi import Form, UploadFile, File
 from pydantic import BaseModel
+from fastapi import Form, UploadFile, File
 
 
 class CreateCategory(BaseModel):
@@ -13,6 +13,8 @@ class CreateCategory(BaseModel):
     description: str
     icon : str
     status: Optional[str] = "Active"
+    deleted_at: Optional[datetime] = None
+
 
 
 def create_category_form(
@@ -44,3 +46,4 @@ class CategoryResponse(BaseModel):
     description : str
     icon : str
     status : str
+    deleted_at : Optional[datetime] = None

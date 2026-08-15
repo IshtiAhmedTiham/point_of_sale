@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import Optional
 from datetime import datetime, timezone
 
 from pydantic import BaseModel
@@ -14,6 +15,7 @@ class CreateSuplier(BaseModel):
     account_no : str
     opening_balance : float
     image : str
+    deleted_at : Optional[datetime] = None
 
 
 def create_suplier_form(
@@ -26,8 +28,8 @@ def create_suplier_form(
     image : UploadFile = File(...)):
 
     os.makedirs("uploads/suplier", exist_ok=True)
-
     file_path = f"uploads/suplier/{datetime.now(timezone.utc)}{image.filename}"
+
     with open(file_path, "wb") as file:
         shutil.copyfileobj(image.file, file)
 
@@ -42,7 +44,6 @@ def create_suplier_form(
     )
 
 
-
 class ResponseSuplier(BaseModel):
     id : int
     name : str
@@ -52,3 +53,4 @@ class ResponseSuplier(BaseModel):
     account_no : str
     opening_balance : float
     image : str
+    deleted_at : Optional[datetime] = None

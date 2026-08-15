@@ -14,6 +14,8 @@ class CreateBrand(BaseModel):
     address : str
     logo : str
     status : Optional[str] = "Active"
+    deleted_at : Optional[datetime] = None
+
 
 
 def create_brand_form(
@@ -25,8 +27,8 @@ def create_brand_form(
     status : str = Form("Active")):
 
     os.makedirs("uploads/brand", exist_ok=True)
-
     file_path = f"uploads/brand/{datetime.now(timezone.utc)}{logo.filename}"
+
     with open(file_path, "wb") as file:
         shutil.copyfileobj(logo.file, file)
 
@@ -50,3 +52,4 @@ class ResponseBrand(BaseModel):
     address : str
     logo : str
     status : str
+    deleted_at : Optional[datetime] = None
