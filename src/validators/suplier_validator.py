@@ -2,16 +2,33 @@ import os
 
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
+from fastapi import (
+    status, 
+    HTTPException, 
+    Depends
+)
 
 from src.config.database import get_db
 from src.models.suplier_model import SuplierModel
-from fastapi import status, Depends, HTTPException
 from src.schemas.suplier_schema import CreateSuplier, create_suplier_form
 
 
-def validate_suplier(data : CreateSuplier = Depends(create_suplier_form), db : Session = Depends(get_db)):
-    suplier = db.query(SuplierModel).filter(or_(SuplierModel.phone == data.phone, SuplierModel.account_no == data.account_no), SuplierModel.deleted_at == None).first()
-
+def validate_suplier(
+    data : CreateSuplier = Depends(create_suplier_form), 
+    db : Session = Depends(get_db)
+):
+    suplier = (
+        db.query(SuplierModel)
+        .filter(
+            or_(
+                SuplierModel.phone == data.phone, 
+                SuplierModel.account_no == data.account_no
+            ), 
+            SuplierModel.deleted_at == None
+        )
+        .first()
+    )
+    
     if suplier:
         os.remove(f"{data.image}")
 

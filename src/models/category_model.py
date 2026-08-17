@@ -1,4 +1,9 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import (
+    Column, 
+    Integer, 
+    String, 
+    DateTime
+)
 
 from src.config.database import Base
 

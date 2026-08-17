@@ -1,5 +1,12 @@
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
+from sqlalchemy import (
+    Column, 
+    Integer, 
+    String, 
+    Float, 
+    ForeignKey, 
+    DateTime
+)
 
 from src.config.database import Base
 

@@ -6,7 +6,14 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fastapi import APIRouter, status, Depends, HTTPException, Query, BackgroundTasks
+from fastapi import (
+    APIRouter, 
+    status, 
+    Depends, 
+    HTTPException, 
+    Query, 
+    BackgroundTasks
+)
 
 from src.config.database import get_db
 from src.models.user_model import UserModel
@@ -15,14 +22,22 @@ from src.validators.user_validator import validate_user
 from src.services.user.create_email_service import send_user_email
 from src.services.user.update_email_service import send_user_email_for_update
 from src.services.user.delete_email_service import send_user_email_for_delete
-from src.schemas.user_schema import CreateUser, ResponseUser, create_user_form
+from src.schemas.user_schema import (
+    CreateUser, 
+    ResponseUser, 
+    create_user_form
+)
 
 
 router = APIRouter()
 
 
 @router.post("", response_model=ResponseUser, status_code=status.HTTP_201_CREATED)
-def create_user(background_task:BackgroundTasks, data : CreateUser = Depends(validate_user), db : Session = Depends(get_db)):
+def create_user(
+    background_task:BackgroundTasks, 
+    data : CreateUser = Depends(validate_user), 
+    db : Session = Depends(get_db)
+):
     if not data.password == data.confirm_password:
         raise HTTPException(
             status_code = status.HTTP_422_UNPROCESSABLE_CONTENT,
@@ -59,8 +74,14 @@ def create_user(background_task:BackgroundTasks, data : CreateUser = Depends(val
 
 
 @router.get("", response_model=Page[ResponseUser], status_code=status.HTTP_200_OK)
-def read_user(filters : Annotated[UserFilters, Query()] = None, db : Session = Depends(get_db)):
-    suplier = db.query(UserModel).filter(UserModel.deleted_at.is_(None))
+def read_user(
+    filters : Annotated[UserFilters, Query()] = None, 
+    db : Session = Depends(get_db)
+):
+    suplier = (
+        db.query(UserModel)
+        .filter(UserModel.deleted_at.is_(None))
+    )
 
     if filters.name:
         suplier = suplier.filter(UserModel.name.like(f"%{filters.name}%"))
@@ -73,14 +94,26 @@ def read_user(filters : Annotated[UserFilters, Query()] = None, db : Session = D
 
 
 @router.put("/{id}", response_model=ResponseUser, status_code=status.HTTP_200_OK)
-def update_user(background_task:BackgroundTasks, id: int, data: CreateUser = Depends(create_user_form), db: Session = Depends(get_db)):
+def update_user(
+    background_task : BackgroundTasks, 
+    id : int, 
+    data : CreateUser = Depends(create_user_form), 
+    db : Session = Depends(get_db)
+):
     if data.password != data.confirm_password:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Password not match"
         )
 
-    user = (db.query(UserModel).filter(UserModel.id == id, UserModel.deleted_at.is_(None)).first())
+    user = (
+        db.query(UserModel)
+        .filter(
+            UserModel.id == id, 
+            UserModel.deleted_at.is_(None)
+        )
+        .first()
+    )
     if not user:
         if data.image and os.path.exists(data.image):
             os.remove(data.image)
@@ -94,7 +127,6 @@ def update_user(background_task:BackgroundTasks, id: int, data: CreateUser = Dep
 
     try:
         updated_data = data.model_dump(exclude={"image"})
-
         for key, value in updated_data.items():
             setattr(user, key, value)
 
@@ -104,7 +136,11 @@ def update_user(background_task:BackgroundTasks, id: int, data: CreateUser = Dep
         db.commit()
         db.refresh(user)
 
-        if (data.image and old_file_path != data.image and os.path.exists(old_file_path)):
+        if (
+            data.image and 
+            old_file_path != data.image and 
+            os.path.exists(old_file_path)
+        ):
             os.remove(old_file_path)
 
     except Exception:
@@ -122,9 +158,19 @@ def update_user(background_task:BackgroundTasks, id: int, data: CreateUser = Dep
 
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
-def delete_user(background_task : BackgroundTasks, id: int, db: Session = Depends(get_db)):
-    user = (db.query(UserModel).filter(UserModel.id == id, UserModel.deleted_at.is_(None)).first())
-
+def delete_user(
+    background_task : BackgroundTasks, 
+    id: int, 
+    db: Session = Depends(get_db)
+):
+    user = (
+        db.query(UserModel)
+        .filter(
+            UserModel.id == id, 
+            UserModel.deleted_at.is_(None)
+        )
+        .first()
+    )
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -146,7 +192,6 @@ def delete_user(background_task : BackgroundTasks, id: int, db: Session = Depend
 
             destination = os.path.join("deleted_file/user", filename)
             shutil.move(f"{file_path}", destination)
-
 
     except Exception:
         db.rollback()

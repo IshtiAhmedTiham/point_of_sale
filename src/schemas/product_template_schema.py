@@ -4,7 +4,11 @@ from typing import Optional
 from datetime import datetime, timezone
 
 from pydantic import BaseModel
-from fastapi import UploadFile, File, Form
+from fastapi import (
+    UploadFile, 
+    File, 
+    Form
+)
 
 
 class CreateProductTemplate(BaseModel):
@@ -32,7 +36,8 @@ def create_product_template_form(
     tax : float = Form(...),
     description : str = Form(...),
     openstock : str = Form(...),
-    image : UploadFile = File(...)):
+    image : UploadFile = File(...)
+):
 
     os.makedirs("uploads/product_template", exist_ok=True)
     file_path = f"uploads/product_template/{datetime.now(timezone.utc)}{image.filename}"

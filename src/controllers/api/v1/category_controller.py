@@ -6,7 +6,13 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fastapi import APIRouter, status, Depends, Query, HTTPException
+from fastapi import (
+    APIRouter, 
+    status, 
+    Depends, 
+    Query, 
+    HTTPException
+)
 
 from src.config.database import get_db
 from src.models.category_model import CategoryModel
@@ -14,14 +20,21 @@ from src.filters.category_filters import CategoryFilter
 from src.models.sub_category_model import SubCategoryModel
 from src.models.product_template_model import ProductTemplateModel
 from src.validators.category_validator import validate_unique_code
-from src.schemas.category_schema import CreateCategory, CategoryResponse, create_category_form
+from src.schemas.category_schema import (
+    CreateCategory, 
+    CategoryResponse, 
+    create_category_form
+)
 
 
 router = APIRouter()
 
 
 @router.post("/", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
-def create_category(data : CreateCategory = Depends(validate_unique_code), db : Session = Depends(get_db)):
+def create_category(
+    data : CreateCategory = Depends(validate_unique_code), 
+    db : Session = Depends(get_db)
+):
     category = CategoryModel(
         name = data.name,
         code = data.code,
@@ -39,15 +52,21 @@ def create_category(data : CreateCategory = Depends(validate_unique_code), db : 
         return category
     
     except Exception:
-        os.remove(data.icon)
         db.rollback()
+        os.remove(data.icon)
         raise
 
 
 
 @router.get("/", response_model=Page[CategoryResponse], status_code=status.HTTP_200_OK)
-def read_category(filters : Annotated[CategoryFilter,Query()] = None, db : Session = Depends(get_db)):
-    category = db.query(CategoryModel).filter(CategoryModel.deleted_at.is_(None))
+def read_category(
+    filters : Annotated[CategoryFilter,Query()] = None, 
+    db : Session = Depends(get_db)
+):
+    category = (
+        db.query(CategoryModel)
+        .filter(CategoryModel.deleted_at.is_(None))
+    )
 
     if filters.name:
         category = category.filter(CategoryModel.name.like(f"%{filters.name}%"))
@@ -60,8 +79,19 @@ def read_category(filters : Annotated[CategoryFilter,Query()] = None, db : Sessi
 
 
 @router.put("/{id}", response_model=CategoryResponse, status_code=status.HTTP_200_OK)
-def update_category(id : int, data : CreateCategory = Depends(create_category_form), db : Session = Depends(get_db)):
-    category = db.query(CategoryModel).filter(CategoryModel.id == id, CategoryModel.deleted_at.is_(None)).first()
+def update_category(
+    id : int, 
+    data : CreateCategory = Depends(create_category_form), 
+    db : Session = Depends(get_db)
+):
+    category = (
+        db.query(CategoryModel)
+        .filter(
+            CategoryModel.id == id, 
+            CategoryModel.deleted_at.is_(None)
+        )
+        .first()
+    )
 
     if not category:
         raise HTTPException(
@@ -91,8 +121,18 @@ def update_category(id : int, data : CreateCategory = Depends(create_category_fo
 
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
-def delete_category(id : int, db : Session = Depends(get_db)):
-    category = db.query(CategoryModel).filter(CategoryModel.id == id, CategoryModel.deleted_at.is_(None)).first()
+def delete_category(
+    id : int, 
+    db : Session = Depends(get_db)
+):
+    category = (
+        db.query(CategoryModel)
+        .filter(
+            CategoryModel.id == id, 
+            CategoryModel.deleted_at.is_(None)
+        )
+        .first()
+    )
     if not category:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
@@ -100,7 +140,14 @@ def delete_category(id : int, db : Session = Depends(get_db)):
         )
     
     
-    sub_category = db.query(SubCategoryModel).filter(SubCategoryModel.category_id == id, SubCategoryModel.deleted_at.is_(None)).first()
+    sub_category = (
+        db.query(SubCategoryModel)
+        .filter(
+            SubCategoryModel.category_id == id, 
+            SubCategoryModel.deleted_at.is_(None)
+        )
+        .first()
+    )
     if sub_category:
         raise HTTPException(
             status_code = status.HTTP_409_CONFLICT,
@@ -108,7 +155,14 @@ def delete_category(id : int, db : Session = Depends(get_db)):
         )
 
 
-    product_template = db.query(ProductTemplateModel).filter(ProductTemplateModel.category_id == id, ProductTemplateModel.deleted_at.is_(None)).first()
+    product_template = (
+        db.query(ProductTemplateModel)
+        .filter(
+            ProductTemplateModel.category_id == id, 
+            ProductTemplateModel.deleted_at.is_(None)
+        )
+        .first()
+    )
     if product_template:
         raise HTTPException(
             status_code = status.HTTP_409_CONFLICT,

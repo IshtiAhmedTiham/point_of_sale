@@ -6,25 +6,40 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fastapi import APIRouter, status, Depends, HTTPException, Query, BackgroundTasks
+from fastapi import (
+    APIRouter, 
+    status, 
+    Depends, 
+    HTTPException, 
+    Query, 
+    BackgroundTasks
+)
 
 from src.config.database import get_db
 from src.models.brand_model import BrandModel
 from src.models.suplier_model import SuplierModel
 from src.filters.brand_filters import BrandFilters
 from src.validators.brand_validator import validators
+from src.models.product_template_model import ProductTemplateModel
 from src.services.brand.create_email_service import send_brand_email
 from src.services.brand.update_email_service import send_brand_email_for_update
 from src.services.brand.delete_email_service import send_brand_email_for_delete
-from src.models.product_template_model import ProductTemplateModel
-from src.schemas.brand_schema import CreateBrand, ResponseBrand, create_brand_form
+from src.schemas.brand_schema import (
+    CreateBrand, 
+    ResponseBrand, 
+    create_brand_form
+)
 
 
 router = APIRouter()
 
 
 @router.post("", response_model=ResponseBrand, status_code=status.HTTP_201_CREATED)
-def create_brand(background_tasks : BackgroundTasks, data : CreateBrand = Depends(validators), db : Session = Depends(get_db)):
+def create_brand(
+    background_tasks : BackgroundTasks, 
+    data : CreateBrand = Depends(validators), 
+    db : Session = Depends(get_db)
+):
     brand = BrandModel(
         name = data.name,
         email = data.email,
@@ -41,8 +56,8 @@ def create_brand(background_tasks : BackgroundTasks, data : CreateBrand = Depend
         db.refresh(brand)
     
     except Exception:
-        os.remove(data.logo)
         db.rollback()
+        os.remove(data.logo)
         raise
 
     background_tasks.add_task(send_brand_email, brand)
@@ -51,8 +66,16 @@ def create_brand(background_tasks : BackgroundTasks, data : CreateBrand = Depend
 
 
 @router.get("", response_model=Page[ResponseBrand], status_code=status.HTTP_200_OK)
-def read_brand(filters : Annotated[BrandFilters, Query()] = None, db : Session = Depends(get_db)):
-    brand = db.query(BrandModel).filter(BrandModel.deleted_at.is_(None))
+def read_brand(
+    filters : Annotated[BrandFilters, 
+    Query()] = None, 
+    db : Session = Depends(get_db)
+):
+    brand = (
+        db.query(BrandModel)
+        .filter(BrandModel
+        .deleted_at.is_(None))
+    )
 
     if filters.name:
         brand = brand.filter(BrandModel.name.like(f"%{filters.name}%"))
@@ -65,8 +88,20 @@ def read_brand(filters : Annotated[BrandFilters, Query()] = None, db : Session =
 
 
 @router.put("/{id}", response_model=ResponseBrand, status_code=status.HTTP_200_OK)
-def update_brand(background_tasks : BackgroundTasks, id : int, data : CreateBrand = Depends(create_brand_form),  db : Session = Depends(get_db)):
-    brand = db.query(BrandModel).filter(BrandModel.id == id, BrandModel.deleted_at.is_(None)).first()
+def update_brand(
+    background_tasks : BackgroundTasks, 
+    id : int, 
+    data : CreateBrand = Depends(create_brand_form),  
+    db : Session = Depends(get_db)
+):
+    brand = (
+        db.query(BrandModel)
+        .filter(
+            BrandModel.id == id, 
+            BrandModel.deleted_at.is_(None)
+        )
+        .first()
+    )
     if not brand:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
@@ -80,7 +115,7 @@ def update_brand(background_tasks : BackgroundTasks, id : int, data : CreateBran
         for key, value in update_data.items():
             setattr(brand, key, value)
 
-        brand.updated_at = datetime.utcnow()
+        brand.updated_at = datetime.now(timezone.utc)
 
         db.commit()
         db.refresh(brand)
@@ -98,8 +133,18 @@ def update_brand(background_tasks : BackgroundTasks, id : int, data : CreateBran
 
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
-def delete_brand(background_task : BackgroundTasks, id : int, db : Session = Depends(get_db)):
-    brand = db.query(BrandModel).filter(BrandModel.id == id, BrandModel.deleted_at.is_(None)).first()
+def delete_brand(
+    background_task : BackgroundTasks, 
+    id : int, db : Session = Depends(get_db)
+):
+    brand = (
+        db.query(BrandModel)
+        .filter(
+            BrandModel.id == id, 
+            BrandModel.deleted_at.is_(None)
+        )
+        .first()
+    )
     if not brand:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
@@ -107,7 +152,14 @@ def delete_brand(background_task : BackgroundTasks, id : int, db : Session = Dep
         )
 
 
-    product_template = db.query(ProductTemplateModel).filter(ProductTemplateModel.brand_id == id, ProductTemplateModel.deleted_at.is_(None)).first()
+    product_template = (
+        db.query(ProductTemplateModel)
+        .filter(
+            ProductTemplateModel.brand_id == id, 
+            ProductTemplateModel.deleted_at.is_(None)
+        )
+        .first()
+    )
     if product_template:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
@@ -115,7 +167,14 @@ def delete_brand(background_task : BackgroundTasks, id : int, db : Session = Dep
         )
     
 
-    suplier = db.query(SuplierModel).filter(SuplierModel.brand_id == id, SuplierModel.deleted_at.is_(None)).first()
+    suplier = (
+        db.query(SuplierModel)
+        .filter(
+            SuplierModel.brand_id == id, 
+            SuplierModel.deleted_at.is_(None)
+        )
+        .first()
+    )
     if suplier:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
@@ -138,7 +197,6 @@ def delete_brand(background_task : BackgroundTasks, id : int, db : Session = Dep
 
         shutil.move(f"{file_path}", destination)
 
-    
     except Exception:
         db.rollback()
         raise

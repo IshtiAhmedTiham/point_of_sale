@@ -13,7 +13,11 @@ EMAIL_CONFIG = {
 }
 
 
-def send_email(to:str, subject:str, body:str):
+def send_email(
+    to: str,
+    subject: str,
+    body: str
+):
     msg = MIMEMultipart()
 
     msg["From"] = "No Reply"

@@ -22,7 +22,4 @@ def get_db():
 
 
 def init_db():
-    from src.models.category_model import CategoryModel
-    from src.models.sub_category_model import SubCategoryModel
-    
     Base.metadata.create_all(bind=get_engine())

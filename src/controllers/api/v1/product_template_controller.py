@@ -6,7 +6,13 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fastapi import APIRouter, status, Depends, HTTPException, Query
+from fastapi import (
+    APIRouter, 
+    status, 
+    Depends, 
+    HTTPException, 
+    Query
+)
 
 from src.config.database import get_db
 from src.models.brand_model import BrandModel
@@ -15,15 +21,29 @@ from src.models.sub_category_model import SubCategoryModel
 from src.models.product_template_model import ProductTemplateModel
 from src.filters.product_template_filters import ProductTemplateFilters
 from src.validators.product_template_validator import validate_unique_code
-from src.schemas.product_template_schema import CreateProductTemplate, ResponseProductTemplate, create_product_template_form
+from src.schemas.product_template_schema import (
+    CreateProductTemplate, 
+    ResponseProductTemplate, 
+    create_product_template_form
+)
 
 
 router = APIRouter()
 
 
 @router.post("", response_model=ResponseProductTemplate, status_code=status.HTTP_201_CREATED)
-def create_product_template(data : CreateProductTemplate = Depends(validate_unique_code), db : Session = Depends(get_db)):
-    category = db.query(CategoryModel).filter(CategoryModel.name == data.category_name, CategoryModel.deleted_at.is_(None)).first()
+def create_product_template(
+    data : CreateProductTemplate = Depends(validate_unique_code), 
+    db : Session = Depends(get_db)
+):
+    category = (
+        db.query(CategoryModel)
+        .filter(
+            CategoryModel.name == data.category_name, 
+            CategoryModel.deleted_at.is_(None)
+        )
+        .first()
+    )
     if not category:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -31,7 +51,14 @@ def create_product_template(data : CreateProductTemplate = Depends(validate_uniq
         )
 
 
-    sub_category = db.query(SubCategoryModel).filter(SubCategoryModel.name == data.sub_category_name, SubCategoryModel.deleted_at.is_(None)).first()
+    sub_category = (
+        db.query(SubCategoryModel)
+        .filter(
+            SubCategoryModel.name == data.sub_category_name, 
+            SubCategoryModel.deleted_at.is_(None)
+        )
+        .first()
+    )
     if not sub_category:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -39,7 +66,14 @@ def create_product_template(data : CreateProductTemplate = Depends(validate_uniq
         )
     
 
-    brand = db.query(BrandModel).filter(BrandModel.name == data.brand_name, BrandModel.deleted_at.is_(None)).first()  
+    brand = (
+        db.query(BrandModel)
+        .filter(
+            BrandModel.name == data.brand_name, 
+            BrandModel.deleted_at.is_(None)
+        )
+        .first()
+    )  
     if not brand:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -69,15 +103,21 @@ def create_product_template(data : CreateProductTemplate = Depends(validate_uniq
         return product_template
     
     except Exception:
-        os.remove(data.image)
         db.rollback()
+        os.remove(data.image)
         raise
 
 
 
 @router.get("", response_model=Page[ResponseProductTemplate], status_code=status.HTTP_200_OK)
-def read_product_template(filters : Annotated[ProductTemplateFilters, Query()] = None, db : Session = Depends(get_db)):
-    product_template = db.query(ProductTemplateModel).filter(ProductTemplateModel.deleted_at.is_(None))
+def read_product_template(
+    filters : Annotated[ProductTemplateFilters, Query()] = None, 
+    db : Session = Depends(get_db)
+):
+    product_template = (
+        db.query(ProductTemplateModel)
+        .filter(ProductTemplateModel.deleted_at.is_(None))
+    )
 
     if filters.name:
         product_template = product_template.filter(ProductTemplateModel.name.like(f"%{filters.name}%"))
@@ -90,8 +130,19 @@ def read_product_template(filters : Annotated[ProductTemplateFilters, Query()] =
 
 
 @router.put("/{id}", response_model=ResponseProductTemplate, status_code=status.HTTP_200_OK)
-def update_product_template(id : int, data : CreateProductTemplate = Depends(create_product_template_form), db : Session = Depends(get_db)):
-    product_template = db.query(ProductTemplateModel).filter(ProductTemplateModel.id == id, ProductTemplateModel.deleted_at.is_(None)).first()
+def update_product_template(
+    id : int, 
+    data : CreateProductTemplate = Depends(create_product_template_form), 
+    db : Session = Depends(get_db)
+):
+    product_template = (
+        db.query(ProductTemplateModel)
+        .filter(
+            ProductTemplateModel.id == id, 
+            ProductTemplateModel.deleted_at.is_(None)
+        )
+        .first()
+    )
 
     file_path = data.image
 
@@ -104,7 +155,14 @@ def update_product_template(id : int, data : CreateProductTemplate = Depends(cre
         )
     
 
-    category = db.query(CategoryModel).filter(CategoryModel.name == data.category_name, CategoryModel.deleted_at.is_(None)).first()
+    category = (
+        db.query(CategoryModel)
+        .filter(
+            CategoryModel.name == data.category_name, 
+            CategoryModel.deleted_at.is_(None)
+        )
+        .first()
+    )
     if not category:
         os.remove(f"{file_path}")
 
@@ -114,7 +172,14 @@ def update_product_template(id : int, data : CreateProductTemplate = Depends(cre
         )
 
     
-    sub_category = db.query(SubCategoryModel).filter(SubCategoryModel.name == data.sub_category_name, SubCategoryModel.deleted_at.is_(None)).first()
+    sub_category = (
+        db.query(SubCategoryModel)
+        .filter(
+            SubCategoryModel.name == data.sub_category_name, 
+            SubCategoryModel.deleted_at.is_(None)
+        )
+        .first()
+    )
     if not sub_category:
         os.remove(f"{file_path}")
 
@@ -124,7 +189,14 @@ def update_product_template(id : int, data : CreateProductTemplate = Depends(cre
         )
     
     
-    brand = db.query(BrandModel).filter(BrandModel.name == data.brand_name, BrandModel.deleted_at.is_(None)).first()
+    brand = (
+        db.query(BrandModel)
+        .filter(
+            BrandModel.name == data.brand_name, 
+            BrandModel.deleted_at.is_(None)
+        )
+        .first()
+    )
     if not brand:
         os.remove(f"{file_path}")
 
@@ -159,8 +231,18 @@ def update_product_template(id : int, data : CreateProductTemplate = Depends(cre
 
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
-def delete_product_template(id : int, db : Session = Depends(get_db)):
-    product_template = db.query(ProductTemplateModel).filter(ProductTemplateModel.id == id, ProductTemplateModel.deleted_at.is_(None)).first()
+def delete_product_template(
+    id : int, 
+    db : Session = Depends(get_db)
+):
+    product_template = (
+        db.query(ProductTemplateModel)
+        .filter(
+            ProductTemplateModel.id == id, 
+            ProductTemplateModel.deleted_at.is_(None)
+        )
+        .first()
+    )
     if not product_template:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

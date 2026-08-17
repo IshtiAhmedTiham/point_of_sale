@@ -4,8 +4,11 @@ from typing import Optional
 from datetime import datetime, timezone
 
 from pydantic import BaseModel
-from fastapi import Form, UploadFile, File
-
+from fastapi import (
+    UploadFile, 
+    File, 
+    Form
+)
 class CreateSubCategory(BaseModel):
     name : str
     category_name : str
@@ -23,7 +26,8 @@ def create_sub_category_form(
     code : str = Form(...),
     icon : UploadFile = File(...),
     description : str = Form(...),
-    status : str = Form("Active")):
+    status : str = Form("Active")
+):
 
     os.makedirs("uploads/sub_category", exist_ok=True)
     file_path = f"uploads/sub_category/{datetime.now(timezone.utc)}{icon.filename}"

@@ -3,8 +3,13 @@ import shutil
 from typing import Optional
 from datetime import datetime, timezone
 
-from fastapi import Form, UploadFile, File
 from pydantic import BaseModel, EmailStr
+from fastapi import (
+    UploadFile, 
+    File, 
+    Form
+)
+
 
 class CreateCustomer(BaseModel):
     name : str
@@ -28,7 +33,8 @@ def create_customer_form(
     opening_balance : float = Form(...),
     discount : float = Form(...),
     taxable : float = Form(...),
-    icon : UploadFile = File(...)):
+    icon : UploadFile = File(...)
+):
 
     os.makedirs("uploads/customer", exist_ok=True)
     file_path = f"uploads/customer/{datetime.now(timezone.utc)}{icon.filename}"

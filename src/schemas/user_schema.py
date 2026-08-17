@@ -4,7 +4,11 @@ from typing import Optional
 from datetime import datetime, timezone
 
 from pydantic import BaseModel, EmailStr
-from fastapi import Form, UploadFile, File
+from fastapi import (
+    UploadFile, 
+    File, 
+    Form
+)
 
 
 class CreateUser(BaseModel):
@@ -32,8 +36,8 @@ def create_user_form(
     phone : str = Form(...),
     address : str = Form(...),
     image : UploadFile = File(...),
-    status : str = Form("Active")):
-
+    status : str = Form("Active")
+):
 
     os.makedirs("uploads/user", exist_ok=True)
     file_path = f"uploads/user/{datetime.now(timezone.utc)}{image.filename}"
