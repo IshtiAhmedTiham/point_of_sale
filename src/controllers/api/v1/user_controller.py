@@ -6,12 +6,15 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fastapi import APIRouter, status, Depends, HTTPException, Query
+from fastapi import APIRouter, status, Depends, HTTPException, Query, BackgroundTasks
 
 from src.config.database import get_db
 from src.models.user_model import UserModel
 from src.filters.user_filters import UserFilters
 from src.validators.user_validator import validate_user
+from src.services.user.create_email_service import send_user_email
+from src.services.user.update_email_service import send_user_email_for_update
+from src.services.user.delete_email_service import send_user_email_for_delete
 from src.schemas.user_schema import CreateUser, ResponseUser, create_user_form
 
 
@@ -19,7 +22,7 @@ router = APIRouter()
 
 
 @router.post("", response_model=ResponseUser, status_code=status.HTTP_201_CREATED)
-def create_user(data : CreateUser = Depends(validate_user), db : Session = Depends(get_db)):
+def create_user(background_task:BackgroundTasks, data : CreateUser = Depends(validate_user), db : Session = Depends(get_db)):
     if not data.password == data.confirm_password:
         raise HTTPException(
             status_code = status.HTTP_422_UNPROCESSABLE_CONTENT,
@@ -44,13 +47,14 @@ def create_user(data : CreateUser = Depends(validate_user), db : Session = Depen
         db.add(user)
         db.commit()
         db.refresh(user)
-
-        return user
     
     except Exception:
         os.remove(data.image)
         db.rollback()
         raise
+
+    background_task.add_task(send_user_email, user)
+    return user
 
 
 
@@ -69,7 +73,7 @@ def read_user(filters : Annotated[UserFilters, Query()] = None, db : Session = D
 
 
 @router.put("/{id}", response_model=ResponseUser, status_code=status.HTTP_200_OK)
-def update_user(id: int, data: CreateUser = Depends(create_user_form), db: Session = Depends(get_db)):
+def update_user(background_task:BackgroundTasks, id: int, data: CreateUser = Depends(create_user_form), db: Session = Depends(get_db)):
     if data.password != data.confirm_password:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
@@ -94,6 +98,7 @@ def update_user(id: int, data: CreateUser = Depends(create_user_form), db: Sessi
         for key, value in updated_data.items():
             setattr(user, key, value)
 
+        user.updated_at = datetime.now(timezone.utc)
         user.image = data.image
 
         db.commit()
@@ -102,8 +107,6 @@ def update_user(id: int, data: CreateUser = Depends(create_user_form), db: Sessi
         if (data.image and old_file_path != data.image and os.path.exists(old_file_path)):
             os.remove(old_file_path)
 
-        return user
-
     except Exception:
         db.rollback()
 
@@ -111,12 +114,15 @@ def update_user(id: int, data: CreateUser = Depends(create_user_form), db: Sessi
             os.remove(data.image)
 
         raise
+
+    background_task.add_task(send_user_email_for_update, user)
+    return user
     
     
 
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
-def delete_user(id: int, db: Session = Depends(get_db)):
+def delete_user(background_task : BackgroundTasks, id: int, db: Session = Depends(get_db)):
     user = (db.query(UserModel).filter(UserModel.id == id, UserModel.deleted_at.is_(None)).first())
 
     if not user:
@@ -141,10 +147,10 @@ def delete_user(id: int, db: Session = Depends(get_db)):
             destination = os.path.join("deleted_file/user", filename)
             shutil.move(f"{file_path}", destination)
 
-        return {
-            "status": "Data successfully deleted"
-        }
 
     except Exception:
         db.rollback()
         raise
+
+    background_task.add_task(send_user_email_for_delete, user)
+    return {"status": "Data successfully deleted"}

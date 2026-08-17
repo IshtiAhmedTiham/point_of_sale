@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta name="color-scheme" content="light">
+
+    <title>Customer Registration</title>
+
+    <style>
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+
+        body {
+            background: #e8e4da;
+            color: #202820;
+            font-family: Georgia, "Times New Roman", serif;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        .wrapper {
+            width: 100%;
+            padding: 50px 15px;
+            background: #e8e4da;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            margin: auto;
+            background: #f8f6ef;
+            border: 1px solid #c9b989;
+        }
+
+        /* HEADER */
+
+        .header {
+            background: #183b2b;
+            padding: 42px 45px;
+            color: #ffffff;
+        }
+
+        .company {
+            color: #d5bd78;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 4px;
+        }
+
+        .header-line {
+            margin-top: 8px;
+            color: #91a397;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9px;
+            letter-spacing: 2px;
+        }
+
+        .title {
+            margin-top: 38px;
+            color: #f2dfaa;
+            font-size: 36px;
+            font-weight: normal;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            margin-top: 15px;
+            color: #c4cdc5;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        /* GOLD LINE */
+
+        .gold-line {
+            height: 4px;
+            background: #c4a85c;
+        }
+
+        /* CONTENT */
+
+        .content {
+            padding: 45px;
+        }
+
+        .label {
+            color: #947b43;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 8px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .heading {
+            margin: 12px 0 0;
+            color: #193b2b;
+            font-size: 25px;
+            font-weight: normal;
+        }
+
+        .text {
+            margin-top: 15px;
+            color: #68675f;
+            font-size: 12px;
+            line-height: 1.9;
+        }
+
+        /* CUSTOMER CARD */
+
+        .details {
+            margin-top: 30px;
+            background: #183b2b;
+            border: 1px solid #b29a59;
+        }
+
+        .row {
+            border-bottom: 1px solid #345441;
+        }
+
+        .row:last-child {
+            border-bottom: none;
+        }
+
+        .key {
+            width: 40%;
+            padding: 18px 22px;
+            color: #91a397;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 8px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .value {
+            padding: 18px 22px;
+            color: #f0dda8;
+            font-size: 13px;
+            text-align: right;
+        }
+
+        /* STATUS */
+
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border: 1px solid #c5aa5d;
+            color: #e8d394;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 7px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        /* WELCOME MESSAGE */
+
+        .welcome {
+            margin-top: 30px;
+            padding: 25px;
+            background: #ebe7dc;
+            border-left: 3px solid #b39a59;
+        }
+
+        .welcome-title {
+            margin: 0;
+            color: #193b2b;
+            font-size: 17px;
+            font-weight: normal;
+        }
+
+        .welcome-text {
+            margin: 10px 0 0;
+            color: #706e66;
+            font-size: 11px;
+            line-height: 1.8;
+        }
+
+        /* FOOTER */
+
+        .footer {
+            padding: 34px 25px;
+            background: #102f23;
+            text-align: center;
+        }
+
+        .ornament {
+            color: #c9ae61;
+            font-size: 13px;
+            letter-spacing: 6px;
+        }
+
+        .footer-company {
+            margin-top: 12px;
+            color: #e3d198;
+            font-size: 14px;
+        }
+
+        .footer-text {
+            margin-top: 7px;
+            color: #91a096;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .copyright {
+            margin-top: 18px;
+            color: #61756a;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 8px;
+        }
+
+        /* MOBILE */
+
+        @media only screen and (max-width: 600px) {
+
+            .wrapper {
+                padding: 15px 5px;
+            }
+
+            .header {
+                padding: 32px 25px;
+            }
+
+            .content {
+                padding: 30px 25px;
+            }
+
+            .title {
+                font-size: 30px;
+            }
+
+            .key {
+                padding: 15px;
+            }
+
+            .value {
+                padding: 15px;
+                font-size: 11px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<table
+    class="wrapper"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+>
+
+<tr>
+
+<td>
+
+
+<table
+    class="container"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+>
+
+
+<!-- =========================================
+     HEADER
+========================================== -->
+
+<tr>
+
+<td class="header">
+
+
+<div class="company">
+
+    AHMED GROUP OF INDUSTRIES
+
+</div>
+
+
+<div class="header-line">
+
+    EXCELLENCE · INTEGRITY · PROGRESS
+
+</div>
+
+
+<div class="title">
+
+    Welcome<br>
+    to Our Community
+
+</div>
+
+
+<div class="subtitle">
+
+    Your customer account has been successfully
+    created and registered with Ahmed Group of
+    Industries.
+
+</div>
+
+
+</td>
+
+</tr>
+
+
+<!-- GOLD LINE -->
+
+<tr>
+
+<td class="gold-line"></td>
+
+</tr>
+
+
+<!-- =========================================
+     CONTENT
+========================================== -->
+
+<tr>
+
+<td class="content">
+
+
+<div class="label">
+
+    Customer Registration
+
+</div>
+
+
+<div class="heading">
+
+    Your account has been created.
+
+</div>
+
+
+<div class="text">
+
+    Dear {{ customer.name }},<br><br>
+
+    We are pleased to confirm that your customer
+    account has been successfully registered in
+    our system.
+
+    <br><br>
+
+    Your information has been securely recorded
+    and your customer profile is now active.
+
+</div>
+
+
+<!-- =========================================
+     CUSTOMER DETAILS
+========================================== -->
+
+<table
+    class="details"
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+>
+
+
+<tr class="row">
+
+<td class="key">
+
+    Customer Name
+
+</td>
+
+<td class="value">
+
+    {{ customer.name }}
+
+</td>
+
+</tr>
+
+
+<tr class="row">
+
+<td class="key">
+
+    Email Address
+
+</td>
+
+<td class="value">
+
+    {{ customer.email }}
+
+</td>
+
+</tr>
+
+
+<tr class="row">
+
+<td class="key">
+
+    Phone Number
+
+</td>
+
+<td class="value">
+
+    {{ customer.phone }}
+
+</td>
+
+</tr>
+
+
+<tr class="row">
+
+<td class="key">
+
+    Account Status
+
+</td>
+
+<td class="value">
+
+<span class="status">
+
+    {{ customer.status }}
+
+</span>
+
+</td>
+
+</tr>
+
+
+</table>
+
+
+<!-- =========================================
+     WELCOME
+========================================== -->
+
+<div class="welcome">
+
+
+<div class="welcome-title">
+
+    Welcome to Ahmed Group of Industries.
+
+</div>
+
+
+<div class="welcome-text">
+
+    Thank you for becoming a valued customer.
+    We look forward to building a long-lasting
+    relationship with you through trust,
+    quality and excellence.
+
+</div>
+
+
+</div>
+
+
+</td>
+
+</tr>
+
+
+<!-- =========================================
+     FOOTER
+========================================== -->
+
+<tr>
+
+<td class="footer">
+
+
+<div class="ornament">
+
+    ◆ · ◆ · ◆
+
+</div>
+
+
+<div class="footer-company">
+
+    AHMED GROUP OF INDUSTRIES
+
+</div>
+
+
+<div class="footer-text">
+
+    A Legacy of Excellence
+
+</div>
+
+
+<div class="copyright">
+
+    © 2026 · All Rights Reserved
+
+</div>
+
+
+</td>
+
+</tr>
+
+
+</table>
+
+
+</td>
+
+</tr>
+
+</table>
+
+</body>
+
+</html>

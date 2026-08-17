@@ -18,3 +18,4 @@ class UserModel(Base):
     image = Column(String, nullable=False)
     status = Column(String, nullable=False, default="Active")
     deleted_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True)

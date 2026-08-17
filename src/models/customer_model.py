@@ -16,4 +16,6 @@ class CustomerModel(Base):
     discount = Column(Float, nullable=False)
     taxable = Column(Float, nullable=False)
     icon = Column(String, nullable=False)
+    status = Column(String, nullable=False, default="Active")
     deleted_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True)

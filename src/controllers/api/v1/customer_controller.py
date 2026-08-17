@@ -6,12 +6,15 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fastapi import APIRouter, status, Depends, Query, HTTPException
+from fastapi import APIRouter, status, Depends, Query, HTTPException, BackgroundTasks
 
 from src.config.database import get_db
 from src.models.customer_model import CustomerModel
 from src.filters.customer_filters import CustomerFilter
 from src.validators.customer_validator import validators
+from src.services.customer.create_email_service import send_customer_email
+from src.services.customer.update_email_service import send_customer_email_for_update
+from src.services.customer.delete_email_service import send_customer_email_for_delete
 from src.schemas.customer_schema import CreateCustomer, CustomerResponse, create_customer_form
 
 
@@ -19,7 +22,7 @@ router = APIRouter()
 
 
 @router.post("", response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
-def create_customer(data : CreateCustomer = Depends(validators), db : Session = Depends(get_db)):
+def create_customer(background_task : BackgroundTasks, data : CreateCustomer = Depends(validators), db : Session = Depends(get_db)):
     customer = CustomerModel(
         name = data.name,
         email = data.email,
@@ -38,11 +41,12 @@ def create_customer(data : CreateCustomer = Depends(validators), db : Session = 
         db.commit()
         db.refresh(customer)
 
-        return customer
-
     except Exception:
         db.rollback()
         raise
+    
+    background_task.add_task(send_customer_email, customer)
+    return customer
 
 
 
@@ -67,7 +71,7 @@ def read_customer(filters : Annotated[CustomerFilter, Query()] = None, db : Sess
 
 
 @router.put("/{id}", response_model=CustomerResponse, status_code=status.HTTP_200_OK)
-def update_customer(id: int, data : CreateCustomer = Depends(create_customer_form), db : Session = Depends(get_db)):
+def update_customer(background_task : BackgroundTasks, id: int, data : CreateCustomer = Depends(create_customer_form), db : Session = Depends(get_db)):
     customer = db.query(CustomerModel).filter(CustomerModel.id == id, CustomerModel.deleted_at.is_(None)).first()
 
     file_path = data.icon
@@ -87,22 +91,25 @@ def update_customer(id: int, data : CreateCustomer = Depends(create_customer_for
         for key,value in update_data.items():
             setattr(customer, key, value)
 
+        customer.updated_at = datetime.utcnow()
+        
         db.commit()
         db.refresh(customer)
         
         os.remove(f"{old_file_path}")
-
-        return customer
 
     except Exception:
         db.rollback()
         os.remove(data.icon)
         raise
 
+    background_task.add_task(send_customer_email_for_update, customer)
+    return customer
+
 
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
-def delete_customer(id : int, db : Session = Depends(get_db)):
+def delete_customer(background_task : BackgroundTasks, id : int, db : Session = Depends(get_db)):
     customer = db.query(CustomerModel).filter(CustomerModel.id == id, CustomerModel.deleted_at.is_(None)).first()
     if not customer:
         raise HTTPException(
@@ -126,9 +133,11 @@ def delete_customer(id : int, db : Session = Depends(get_db)):
         
         shutil.move(f"{file_path}", destination)
 
-        return {"status" : "Data successfuly deleted"}
 
     except Exception:
         db.rollback()
         raise
+
+    background_task.add_task(send_customer_email_for_delete, customer)
+    return {"status" : "Data successfuly deleted"}
 

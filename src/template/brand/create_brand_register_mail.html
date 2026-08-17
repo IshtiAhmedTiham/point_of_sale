@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta name="color-scheme" content="light">
+
+    <title>Brand Registration</title>
+
+    <style>
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+
+        body {
+            background: #dfe3dc;
+            color: #20251f;
+
+            font-family:
+                Georgia,
+                "Times New Roman",
+                serif;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+
+        /* =====================================================
+           PAGE
+        ===================================================== */
+
+        .page {
+            width: 100%;
+
+            padding: 55px 15px;
+
+            background: #dfe3dc;
+        }
+
+
+        /* =====================================================
+           MAIN CONTAINER
+        ===================================================== */
+
+        .email {
+            width: 100%;
+
+            max-width: 700px;
+
+            margin: auto;
+
+            background: #f8f5eb;
+
+            border: 1px solid #b9af91;
+        }
+
+
+        /* =====================================================
+           HERO
+        ===================================================== */
+
+        .hero {
+            background: #123b2a;
+
+            padding: 42px 45px;
+
+            color: #ffffff;
+        }
+
+
+        .hero-top {
+            width: 100%;
+        }
+
+
+        .brand-label {
+            color: #d6bf7c;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            font-size: 12px;
+
+            font-weight: bold;
+
+            letter-spacing: 4px;
+
+            text-transform: uppercase;
+        }
+
+
+        .hero-number {
+            color: #899b8e;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            font-size: 8px;
+
+            letter-spacing: 2px;
+
+            text-align: left;
+        }
+
+
+        /* =====================================================
+           HERO CREST
+        ===================================================== */
+
+        /* .crest-cell {
+            padding-top: 40px;
+
+            width: 95px;
+        }
+
+
+        .crest {
+            width: 72px;
+
+            height: 82px;
+
+            border: 1px solid #d1b76c;
+
+            text-align: center;
+        }
+
+
+        .crest-inner {
+            margin: 6px;
+
+            height: 68px;
+
+            border: 1px solid #806f42;
+
+            line-height: 68px;
+
+            color: #ead69a;
+
+            font-size: 27px;
+
+            font-weight: bold;
+        } */
+
+
+        /* =====================================================
+           HERO TITLE
+        ===================================================== */
+
+        .hero-content {
+            padding-top: 38px;
+        }
+
+
+        .hero-small {
+            margin: 0 0 13px;
+
+            color: #c8b77f;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            font-size: 8px;
+
+            font-weight: bold;
+
+            letter-spacing: 3px;
+
+            text-transform: uppercase;
+        }
+
+
+        .hero-title {
+            margin: 0;
+
+            color: #f5e9c4;
+
+            font-size: 39px;
+
+            font-weight: normal;
+
+            line-height: 1.13;
+        }
+
+
+        .hero-description {
+            max-width: 490px;
+
+            margin: 22px 0 0;
+
+            color: #c3cbc2;
+
+            font-size: 12px;
+
+            line-height: 1.5;
+        }
+
+
+        /* =====================================================
+           GOLD RULE
+        ===================================================== */
+
+        .gold-rule {
+            height: 4px;
+
+            background: #c6ac5d;
+        }
+
+
+        /* =====================================================
+           INTRODUCTION
+        ===================================================== */
+
+        .intro {
+            padding: 42px 50px 30px;
+
+            background: #f8f5eb;
+        }
+
+
+        .intro-label {
+            margin: 0 0 12px;
+
+            color: #917b45;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            font-size: 8px;
+
+            font-weight: bold;
+
+            letter-spacing: 3px;
+
+            text-transform: uppercase;
+        }
+
+
+        .intro-title {
+            margin: 0;
+
+            color: #193a2c;
+
+            font-size: 25px;
+
+            font-weight: normal;
+        }
+
+
+        .intro-text {
+            max-width: 520px;
+
+            margin: 15px 0 0;
+
+            color: #6c6960;
+
+            font-size: 12px;
+
+            line-height: 1.7;
+        }
+
+
+        /* =====================================================
+           REGISTRY SECTION
+        ===================================================== */
+
+        .registry {
+            padding: 20px 50px 45px;
+        }
+
+
+        .registry-card {
+            background: #123b2a;
+
+            border: 1px solid #a89155;
+        }
+
+
+        .registry-title {
+            padding: 22px 25px;
+
+            border-bottom: 1px solid #75653d;
+
+            color: #e2ce91;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            font-size: 8px;
+
+            font-weight: bold;
+
+            letter-spacing: 3px;
+
+            text-transform: uppercase;
+        }
+
+
+        .registry-row {
+            border-bottom: 1px solid #315442;
+        }
+
+
+        .registry-row:last-child {
+            border-bottom: none;
+        }
+
+
+        .registry-label {
+            width: 35%;
+
+            padding: 18px 25px;
+
+            color: #8fa395;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            font-size: 8px;
+
+            font-weight: bold;
+
+            letter-spacing: 1.5px;
+
+            text-transform: uppercase;
+        }
+
+
+        .registry-value {
+            padding: 18px 25px;
+
+            color: #f1dfaa;
+
+            font-size: 14px;
+
+            text-align: right;
+        }
+
+
+        /* =====================================================
+           STATUS
+        ===================================================== */
+
+        .status {
+            display: inline-block;
+
+            padding: 6px 14px;
+
+            border: 1px solid #c6ad64;
+
+            color: #ead69a;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            font-size: 7px;
+
+            font-weight: bold;
+
+            letter-spacing: 2px;
+
+            text-transform: uppercase;
+        }
+
+
+        /* =====================================================
+           STATEMENT
+        ===================================================== */
+
+        .statement {
+            padding: 25px 50px 45px;
+
+            text-align: center;
+        }
+
+
+        .statement-mark {
+            color: #aa914f;
+
+            font-size: 20px;
+
+            line-height: 1;
+        }
+
+
+        .statement-text {
+            max-width: 480px;
+
+            margin: 17px auto 0;
+
+            color: #5f5c54;
+
+            font-size: 13px;
+
+            line-height: 2;
+        }
+
+
+        /* =====================================================
+           ACTION AREA
+        ===================================================== */
+
+        .action {
+            padding: 42px 50px;
+
+            background: #ebe7dc;
+
+            border-top: 1px solid #cbc2aa;
+
+            border-bottom: 1px solid #cbc2aa;
+
+            text-align: center;
+        }
+
+
+        .action-label {
+            margin: 0 0 12px;
+
+            color: #927c45;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            font-size: 8px;
+
+            font-weight: bold;
+
+            letter-spacing: 3px;
+
+            text-transform: uppercase;
+        }
+
+
+        .action-title {
+            margin: 0;
+
+            color: #193a2c;
+
+            font-size: 26px;
+
+            font-weight: normal;
+        }
+
+
+        .action-description {
+            max-width: 440px;
+
+            margin: 14px auto 25px;
+
+            color: #77736a;
+
+            font-size: 11px;
+
+            line-height: 1.9;
+        }
+
+
+        .button {
+            display: inline-block;
+
+            padding: 14px 35px;
+
+            background: #123b2a;
+
+            border: 1px solid #c5aa5b;
+
+            color: #f3e3b1 !important;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            font-size: 8px;
+
+            font-weight: bold;
+
+            letter-spacing: 2px;
+
+            text-transform: uppercase;
+        }
+
+
+        /* =====================================================
+           SIGNATURE
+        ===================================================== */
+
+        .signature {
+            padding: 42px 50px;
+
+            text-align: center;
+        }
+
+
+        .signature-symbol {
+            color: #aa914e;
+
+            font-size: 13px;
+
+            letter-spacing: 7px;
+        }
+
+
+        .signature-line {
+            width: 45px;
+
+            height: 1px;
+
+            margin: 14px auto;
+
+            background: #9f8a55;
+        }
+
+
+        .signature-name {
+            margin: 0;
+
+            color: #26382c;
+
+            font-size: 14px;
+        }
+
+
+        .signature-role {
+            margin: 6px 0 0;
+
+            color: #89857b;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            font-size: 8px;
+
+            letter-spacing: 1.5px;
+
+            text-transform: uppercase;
+        }
+
+
+        /* =====================================================
+           FOOTER
+        ===================================================== */
+
+        .footer {
+            padding: 32px 40px;
+
+            background: #102f23;
+
+            color: #ffffff;
+
+            text-align: center;
+        }
+
+
+        .footer-ornament {
+            color: #cbb267;
+
+            font-size: 12px;
+
+            letter-spacing: 6px;
+        }
+
+
+        .footer-name {
+            margin: 12px 0 0;
+
+            color: #e5d39b;
+
+            font-size: 14px;
+        }
+
+
+        .footer-description {
+            margin: 8px 0 0;
+
+            color: #91a096;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            font-size: 8px;
+
+            letter-spacing: 1px;
+
+            text-transform: uppercase;
+        }
+
+
+        .footer-copyright {
+            margin: 18px 0 0;
+
+            color: #63766b;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            font-size: 8px;
+        }
+
+
+        /* =====================================================
+           MOBILE
+        ===================================================== */
+
+        @media only screen and (max-width: 600px) {
+
+            .page {
+                padding: 15px 6px;
+            }
+
+            .hero {
+                padding: 32px 25px;
+            }
+
+            .hero-title {
+                font-size: 31px;
+            }
+
+            .hero-description {
+                font-size: 11px;
+            }
+
+            .intro {
+                padding-left: 25px;
+                padding-right: 25px;
+            }
+
+            .registry {
+                padding-left: 25px;
+                padding-right: 25px;
+            }
+
+            .statement {
+                padding-left: 25px;
+                padding-right: 25px;
+            }
+
+            .action {
+                padding-left: 25px;
+                padding-right: 25px;
+            }
+
+            .signature {
+                padding-left: 25px;
+                padding-right: 25px;
+            }
+
+            .registry-label {
+                width: 40%;
+                padding-left: 18px;
+                padding-right: 10px;
+            }
+
+            .registry-value {
+                padding-left: 10px;
+                padding-right: 18px;
+
+                font-size: 12px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<table
+    class="page"
+    width="100%"
+    role="presentation"
+>
+
+    <tr>
+
+        <td align="center">
+
+
+            <table
+                class="email"
+                width="100%"
+                role="presentation"
+            >
+
+                <!-- =========================================
+                     HERO
+                ========================================== -->
+
+                <tr>
+
+                    <td class="hero">
+
+
+                        <table
+                            width="100%"
+                            role="presentation"
+                        >
+
+                            <tr>
+
+                                <td class="brand-label">
+                                    AHMED GROUP OF INDUSTRIES <br>
+                                </td>
+                                    
+                            </tr>
+                            <tr>
+                                <td class="hero-number">
+                                    Tradition · Excellence · Distinction
+                                </td>
+                            </tr>
+
+
+
+                        </table>
+
+
+                        <!-- <div class="crest-cell">
+
+                            <div class="crest">
+
+                                <div class="crest-inner">
+                                    AGI
+                                </div>
+                                
+
+                            </div>
+
+                        </div> -->
+
+
+                        <div class="hero-content">
+
+                            <p class="hero-small">
+                                Official Brand Registry
+                            </p>
+
+
+                            <h1 class="hero-title">
+                                A New Name<br>
+                                Enters the Registry
+                            </h1>
+
+
+                            <p class="hero-description">
+
+                                Your brand registration has been
+                                formally completed. The details
+                                provided during registration have
+                                been successfully recorded within
+                                the management system.
+
+                            </p>
+
+                        </div>
+
+
+                    </td>
+
+                </tr>
+
+
+                <!-- GOLD RULE -->
+
+                <tr>
+
+                    <td class="gold-rule"></td>
+
+                </tr>
+
+
+                <!-- =========================================
+                     INTRO
+                ========================================== -->
+
+                <tr>
+
+                    <td class="intro">
+
+                        <p class="intro-label">
+                            A Formal Acknowledgement
+                        </p>
+
+
+                        <h2 class="intro-title">
+                            Welcome to your new workspace.
+                        </h2>
+
+
+                        <p class="intro-text">
+
+                            It is our pleasure to confirm the
+                            successful establishment of your
+                            brand. Your business identity has
+                            now been recorded and your workspace
+                            is ready for operation.
+
+                        </p>
+
+                    </td>
+
+                </tr>
+
+
+                <!-- =========================================
+                     REGISTRY
+                ========================================== -->
+
+                <tr>
+
+                    <td class="registry">
+
+
+                        <div class="registry-card">
+
+
+                            <div class="registry-title">
+                                Official Registration Record
+                            </div>
+
+
+                            <table
+                                width="100%"
+                                role="presentation"
+                            >
+
+
+                                <tr class="registry-row">
+
+                                    <td class="registry-label">
+                                        Brand Name
+                                    </td>
+
+                                    <td class="registry-value">
+                                        {{ brand_name }}
+                                    </td>
+
+                                </tr>
+
+
+                                <tr class="registry-row">
+
+                                    <td class="registry-label">
+                                        Registered Email
+                                    </td>
+
+                                    <td class="registry-value">
+                                        {{ brand_email }}
+                                    </td>
+
+                                </tr>
+
+
+                                <tr class="registry-row">
+
+                                    <td class="registry-label">
+                                        Current Status
+                                    </td>
+
+                                    <td class="registry-value">
+
+                                        <span class="status">
+                                            {{ brand_status }}
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+
+
+                            </table>
+
+
+                        </div>
+
+
+                    </td>
+
+                </tr>
+
+
+                <!-- =========================================
+                     STATEMENT
+                ========================================== -->
+
+                <tr>
+
+                    <td class="statement">
+
+                        <div class="statement-mark">
+                            ❧
+                        </div>
+
+
+                        <p class="statement-text">
+
+                            "Every established business begins
+                            with an identity. Today, yours has
+                            officially found its place."
+
+                        </p>
+
+                    </td>
+
+                </tr>
+
+
+                <!-- =========================================
+                     ACTION
+                ========================================== -->
+
+                <tr>
+
+                    <td class="action">
+
+                        <p class="action-label">
+                            Your Invitation
+                        </p>
+
+
+                        <h2 class="action-title">
+                            Step Into Your Workspace
+                        </h2>
+
+
+                        <p class="action-description">
+
+                            Your environment is prepared.
+                            Enter the platform and begin
+                            managing your brand, products,
+                            inventory and daily operations.
+
+                        </p>
+
+
+                        <a
+                            href="{{ dashboard_url }}"
+                            class="button"
+                        >
+                            Enter Workspace
+                        </a>
+
+
+                    </td>
+
+                </tr>
+
+
+                <!-- =========================================
+                     SIGNATURE
+                ========================================== -->
+
+                <!-- <tr>
+
+                    <td class="signature">
+
+                        <div class="signature-symbol">
+                            ◆ · ◆ · ◆
+                        </div>
+
+
+                        <div class="signature-line"></div>
+
+
+                        <p class="signature-name">
+                            POS Management System
+                        </p>
+
+
+                        <p class="signature-role">
+                            Business Management Division
+                        </p>
+
+                    </td>
+
+                </tr> -->
+
+
+                <!-- =========================================
+                     FOOTER
+                ========================================== -->
+
+                <tr>
+
+                    <td class="footer">
+
+                        <div class="footer-ornament">
+                            ♛ &nbsp; ◆ &nbsp; ♛
+                        </div>
+
+
+                        <p class="footer-name">
+                            AHMED GROUP OF INDUSTRIES
+                        </p>
+
+
+                        <p class="footer-description">
+                            Excellence · Integrity · Service
+                        </p>
+
+
+                        <p class="footer-copyright">
+                            © 2026 · All Rights Reserved
+                        </p>
+
+                    </td>
+
+                </tr>
+
+
+            </table>
+
+
+        </td>
+
+    </tr>
+
+</table>
+
+
+</body>
+
+</html>

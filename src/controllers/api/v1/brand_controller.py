@@ -13,7 +13,9 @@ from src.models.brand_model import BrandModel
 from src.models.suplier_model import SuplierModel
 from src.filters.brand_filters import BrandFilters
 from src.validators.brand_validator import validators
-from src.services.email_service import send_brand_email
+from src.services.brand.create_email_service import send_brand_email
+from src.services.brand.update_email_service import send_brand_email_for_update
+from src.services.brand.delete_email_service import send_brand_email_for_delete
 from src.models.product_template_model import ProductTemplateModel
 from src.schemas.brand_schema import CreateBrand, ResponseBrand, create_brand_form
 
@@ -44,7 +46,6 @@ def create_brand(background_tasks : BackgroundTasks, data : CreateBrand = Depend
         raise
 
     background_tasks.add_task(send_brand_email, brand)
-
     return brand
 
 
@@ -64,7 +65,7 @@ def read_brand(filters : Annotated[BrandFilters, Query()] = None, db : Session =
 
 
 @router.put("/{id}", response_model=ResponseBrand, status_code=status.HTTP_200_OK)
-def update_brand(id : int, data : CreateBrand = Depends(create_brand_form),  db : Session = Depends(get_db)):
+def update_brand(background_tasks : BackgroundTasks, id : int, data : CreateBrand = Depends(create_brand_form),  db : Session = Depends(get_db)):
     brand = db.query(BrandModel).filter(BrandModel.id == id, BrandModel.deleted_at.is_(None)).first()
     if not brand:
         raise HTTPException(
@@ -79,22 +80,25 @@ def update_brand(id : int, data : CreateBrand = Depends(create_brand_form),  db 
         for key, value in update_data.items():
             setattr(brand, key, value)
 
+        brand.updated_at = datetime.utcnow()
+
         db.commit()
         db.refresh(brand)
 
         os.remove(f"{file_path}")
 
-        return brand
-    
     except Exception:
         db.rollback()
         os.remove(data.logo)
         raise
 
+    background_tasks.add_task(send_brand_email_for_update, brand)
+    return brand
+
 
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
-def delete_brand(id : int, db : Session = Depends(get_db)):
+def delete_brand(background_task : BackgroundTasks, id : int, db : Session = Depends(get_db)):
     brand = db.query(BrandModel).filter(BrandModel.id == id, BrandModel.deleted_at.is_(None)).first()
     if not brand:
         raise HTTPException(
@@ -134,8 +138,10 @@ def delete_brand(id : int, db : Session = Depends(get_db)):
 
         shutil.move(f"{file_path}", destination)
 
-        return {"status" : "Data successfuly delete"}
     
     except Exception:
         db.rollback()
         raise
+    
+    background_task.add_task(send_brand_email_for_delete, brand)
+    return {"status" : "Data successfuly delete"}
