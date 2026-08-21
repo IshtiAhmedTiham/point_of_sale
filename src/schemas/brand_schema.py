@@ -3,13 +3,14 @@ import shutil
 from typing import Optional
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from fastapi import (
     UploadFile, 
     File, 
     Form
 )
 
+from src.schemas.suplier_schema import ResponseSuplier
 
 class CreateBrand(BaseModel):
     name : str
@@ -57,3 +58,6 @@ class ResponseBrand(BaseModel):
     logo : str
     status : str
     deleted_at : Optional[datetime] = None
+    supliers: list[ResponseSuplier] = Field(
+        default_factory=list
+    )

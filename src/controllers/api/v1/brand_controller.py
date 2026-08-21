@@ -3,7 +3,7 @@ import shutil
 from typing import Annotated
 from datetime import datetime, timezone
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi import (
@@ -73,8 +73,8 @@ def read_brand(
 ):
     brand = (
         db.query(BrandModel)
-        .filter(BrandModel
-        .deleted_at.is_(None))
+        .options(selectinload(BrandModel.supliers))
+        .filter(BrandModel.deleted_at.is_(None))
     )
 
     if filters.name:

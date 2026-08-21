@@ -3,12 +3,14 @@ import shutil
 from typing import Optional
 from datetime import datetime, timezone
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from fastapi import (
     UploadFile, 
     File, 
     Form
 )
+
+from src.schemas.sub_category_schema import ResponseSubCategory
 
 
 class CreateCategory(BaseModel):
@@ -52,3 +54,6 @@ class CategoryResponse(BaseModel):
     icon : str
     status : str
     deleted_at : Optional[datetime] = None
+    sub_categories: list[ResponseSubCategory] = Field(
+        default_factory=list
+    )

@@ -1,3 +1,4 @@
+from sqlalchemy.orm import relationship
 from sqlalchemy import (
     Column, 
     Integer, 
@@ -17,3 +18,9 @@ class CategoryModel(Base):
     icon = Column(String, nullable=False, unique=True)
     status = Column(String, nullable=False, default="Active")
     deleted_at = Column(DateTime, nullable=True)
+
+    sub_categories = relationship(
+        "SubCategoryModel",
+        back_populates="category",
+        cascade="all, delete-orphan"
+    )

@@ -7,7 +7,8 @@ from src.controllers.api.v1 import (
     product_template_controller,
     customer_controller,
     suplier_controller,
-    user_controller
+    user_controller,
+    purchase_controller
 )
 
 
@@ -21,3 +22,4 @@ router.include_router(product_template_controller.router, prefix="/product_templ
 router.include_router(customer_controller.router, prefix="/customer", tags=["Customer"])
 router.include_router(suplier_controller.router, prefix="/suplier", tags=["Suplier"])
 router.include_router(user_controller.router, prefix="/user", tags=["User"])
+router.include_router(purchase_controller.router, prefix="/purchase", tags=["Purchase"])

@@ -1,3 +1,4 @@
+from sqlalchemy.orm import relationship
 from sqlalchemy import (
     Column, 
     Integer, 
@@ -20,3 +21,9 @@ class BrandModel(Base):
     status = Column(String, nullable=False, default="Active")
     deleted_at = Column(DateTime, nullable=True)
     updated_at = Column(DateTime, nullable=True)
+
+    supliers = relationship(
+        "SuplierModel",
+        back_populates="brands",
+        cascade="all, delete-orphan"
+    )

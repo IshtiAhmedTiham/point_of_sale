@@ -3,8 +3,8 @@ import shutil
 from typing import Annotated
 from datetime import datetime, timezone
 
-from sqlalchemy.orm import Session
-from fastapi_pagination import Page, Params
+from sqlalchemy.orm import Session, selectinload
+from fastapi_pagination import Page, Params 
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi import (
     APIRouter, 
@@ -65,6 +65,7 @@ def read_category(
 ):
     category = (
         db.query(CategoryModel)
+        .options(selectinload(CategoryModel.sub_categories))
         .filter(CategoryModel.deleted_at.is_(None))
     )
 

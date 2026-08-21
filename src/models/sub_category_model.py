@@ -21,4 +21,7 @@ class SubCategoryModel(Base):
     status = Column(String, nullable=False, default="Active")
     deleted_at = Column(DateTime, nullable=True)
 
-    category = relationship("CategoryModel")
+    category = relationship(
+        "CategoryModel",
+        back_populates="sub_categories"
+    )

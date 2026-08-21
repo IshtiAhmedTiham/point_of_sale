@@ -24,4 +24,7 @@ class SuplierModel(Base):
     image = Column(String, nullable=False)
     deleted_at = Column(DateTime, nullable=True)
 
-    brand = relationship("BrandModel")
+    brands = relationship(
+        "BrandModel",
+        back_populates="supliers"
+    )
