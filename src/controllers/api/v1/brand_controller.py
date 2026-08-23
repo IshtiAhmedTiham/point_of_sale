@@ -67,8 +67,7 @@ def create_brand(
 
 @router.get("", response_model=Page[ResponseBrand], status_code=status.HTTP_200_OK)
 def read_brand(
-    filters : Annotated[BrandFilters, 
-    Query()] = None, 
+    filters : Annotated[BrandFilters, Query()] = None,
     db : Session = Depends(get_db)
 ):
     brand = (
