@@ -22,6 +22,7 @@ from src.validators.customer_validator import validators
 from src.services.customer.create_email_service import send_customer_email
 from src.services.customer.update_email_service import send_customer_email_for_update
 from src.services.customer.delete_email_service import send_customer_email_for_delete
+from src.utils.files import delete_file
 from src.schemas.customer_schema import (
     CreateCustomer, 
     CustomerResponse, 
@@ -170,12 +171,7 @@ def delete_customer(
         db.commit()
         db.refresh(customer)
 
-        file = os.path.basename(f"{file_path}")
-
-        os.makedirs("deleted_file/customer", exist_ok=True)
-        destination = f"deleted_file/customer/{file}"
-        
-        shutil.move(f"{file_path}", destination)
+        delete_file(f"{file_path}", "customer")
 
     except Exception:
         db.rollback()

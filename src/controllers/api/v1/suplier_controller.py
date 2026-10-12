@@ -19,6 +19,7 @@ from src.models.brand_model import BrandModel
 from src.models.suplier_model import SuplierModel
 from src.filters.suplier_filters import SuplierFilters
 from src.validators.suplier_validator import validate_suplier
+from src.utils.files import delete_file
 from src.schemas.suplier_schema import (
     CreateSuplier, 
     ResponseSuplier, 
@@ -182,12 +183,7 @@ def delete_suplier(
         db.commit()
         db.refresh(suplier)
 
-        file = os.path.basename(f"{file_path}")
-
-        os.makedirs("deleted_file/suplier", exist_ok=True)
-        destination = f"deleted_file/suplier/{file}"
-
-        shutil.move(f"{file_path}", destination)
+        delete_file(f"{file_path}", "suplier")
 
         return {"stauts" : "Data successfuly deleted"}
     

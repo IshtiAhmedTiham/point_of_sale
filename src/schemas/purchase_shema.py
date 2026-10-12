@@ -1,9 +1,8 @@
 from typing import Optional
-
-from pydantic import BaseModel, Field
 from datetime import datetime
 
 from fastapi import Form
+from pydantic import BaseModel, Field
 
 class CreatePurchase(BaseModel):
     date : datetime

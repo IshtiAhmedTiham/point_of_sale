@@ -20,6 +20,7 @@ from src.models.sub_category_model import SubCategoryModel
 from src.filters.sub_category_filters import SubCategoryFilter
 from src.models.product_template_model import ProductTemplateModel
 from src.validators.sub_category_validator import validate_unique_code
+from src.utils.files import delete_file
 from src.schemas.sub_category_schema import (
     CreateSubCategory, 
     ResponseSubCategory, 
@@ -193,12 +194,7 @@ def delete_sub_category(
         db.commit()
         db.refresh(sub_category)
 
-        file = os.path.basename(f"{file_path}")
-
-        os.makedirs("deleted_file/sub_category", exist_ok=True)
-        destination = f"deleted_file/sub_category/{file}"
-
-        shutil.move(f"{file_path}", destination)
+        delete_file(f"{file_path}", "sub_category")
 
         return ("status : Data successfuly deleted")
     

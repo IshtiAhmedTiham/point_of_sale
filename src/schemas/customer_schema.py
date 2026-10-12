@@ -10,6 +10,8 @@ from fastapi import (
     Form
 )
 
+from src.utils.files import save_file
+
 
 class CreateCustomer(BaseModel):
     name : str
@@ -35,12 +37,8 @@ def create_customer_form(
     taxable : float = Form(...),
     icon : UploadFile = File(...)
 ):
-
-    os.makedirs("uploads/customer", exist_ok=True)
-    file_path = f"uploads/customer/{datetime.now(timezone.utc)}{icon.filename}"
-
-    with open(file_path, "wb") as file:
-        shutil.copyfileobj(icon.file, file)
+    
+    file_path = save_file(icon, "customer")
 
     return CreateCustomer(
         name = name,

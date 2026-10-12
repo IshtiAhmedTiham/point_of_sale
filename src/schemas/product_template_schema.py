@@ -10,6 +10,8 @@ from fastapi import (
     Form
 )
 
+from src.utils.files import save_file
+
 
 class CreateProductTemplate(BaseModel):
     name : str
@@ -39,12 +41,7 @@ def create_product_template_form(
     image : UploadFile = File(...)
 ):
 
-    os.makedirs("uploads/product_template", exist_ok=True)
-    file_path = f"uploads/product_template/{datetime.now(timezone.utc)}{image.filename}"
-
-    with open(file_path, "wb") as file:
-        shutil.copyfileobj(image.file, file)
-
+    file_path = save_file(image, "product_template")
 
     return CreateProductTemplate(
         name = name,

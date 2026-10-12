@@ -10,6 +10,9 @@ from fastapi import (
     Form
 )
 
+from src.utils.files import save_file
+
+
 class CreateSuplier(BaseModel):
     name : str
     brand_name : str
@@ -28,13 +31,10 @@ def create_suplier_form(
     address : str = Form(...),
     account_no : str = Form(...),
     opening_balance : float = Form(...),
-    image : UploadFile = File(...)):
+    image : UploadFile = File(...)
+):
 
-    os.makedirs("uploads/suplier", exist_ok=True)
-    file_path = f"uploads/suplier/{datetime.now(timezone.utc)}{image.filename}"
-
-    with open(file_path, "wb") as file:
-        shutil.copyfileobj(image.file, file)
+    file_path = save_file(image, "suplier")
 
     return CreateSuplier(
         name = name,

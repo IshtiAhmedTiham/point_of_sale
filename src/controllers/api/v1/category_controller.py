@@ -20,6 +20,7 @@ from src.filters.category_filters import CategoryFilter
 from src.models.sub_category_model import SubCategoryModel
 from src.models.product_template_model import ProductTemplateModel
 from src.validators.category_validator import validate_unique_code
+from src.utils.files import delete_file
 from src.schemas.category_schema import (
     CreateCategory, 
     CategoryResponse, 
@@ -179,12 +180,7 @@ def delete_category(
         db.commit()
         db.refresh(category)
 
-        file = os.path.basename(f"{file_path}")
-
-        os.makedirs("deleted_file/category", exist_ok=True)
-        destination = f"deleted_file/category/{file}"
-
-        shutil.move(f"{file_path}", destination)
+        delete_file(f"{file_path}", "category")
 
         return ("status : Data successfuly deleted")
     

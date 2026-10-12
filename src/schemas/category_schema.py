@@ -11,6 +11,7 @@ from fastapi import (
 )
 
 from src.schemas.sub_category_schema import ResponseSubCategory
+from src.utils.files import save_file
 
 
 class CreateCategory(BaseModel):
@@ -31,11 +32,7 @@ def create_category_form(
     status : Optional[str] = Form("Active")
 ):
     
-    os.makedirs("uploads/category", exist_ok=True)
-    file_path = f"uploads/category/{datetime.now(timezone.utc)}{icon.filename}"
-
-    with open(file_path, "wb") as file:
-        shutil.copyfileobj(icon.file, file)
+    file_path = save_file(icon, "category")
 
     return CreateCategory(
         name = name,

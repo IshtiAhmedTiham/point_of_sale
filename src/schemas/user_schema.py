@@ -10,6 +10,8 @@ from fastapi import (
     Form
 )
 
+from src.utils.files import save_file
+
 
 class CreateUser(BaseModel):
     name : str
@@ -39,11 +41,7 @@ def create_user_form(
     status : str = Form("Active")
 ):
 
-    os.makedirs("uploads/user", exist_ok=True)
-    file_path = f"uploads/user/{datetime.now(timezone.utc)}{image.filename}"
-
-    with open(file_path, "wb") as file:
-        shutil.copyfileobj(image.file, file)
+    file_path = save_file(image, "user")
 
     return CreateUser(
         name = name,

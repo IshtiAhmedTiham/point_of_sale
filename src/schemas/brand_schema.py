@@ -11,6 +11,7 @@ from fastapi import (
 )
 
 from src.schemas.suplier_schema import ResponseSuplier
+from src.utils.files import save_file
 
 class CreateBrand(BaseModel):
     name : str
@@ -32,11 +33,7 @@ def create_brand_form(
     status : str = Form("Active")
 ):
 
-    os.makedirs("uploads/brand", exist_ok=True)
-    file_path = f"uploads/brand/{datetime.now(timezone.utc)}{logo.filename}"
-
-    with open(file_path, "wb") as file:
-        shutil.copyfileobj(logo.file, file)
+    file_path = save_file(logo, "brand")
 
     return CreateBrand(
         name = name,

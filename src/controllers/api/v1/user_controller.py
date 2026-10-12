@@ -22,6 +22,7 @@ from src.validators.user_validator import validate_user
 from src.services.user.create_email_service import send_user_email
 from src.services.user.update_email_service import send_user_email_for_update
 from src.services.user.delete_email_service import send_user_email_for_delete
+from src.utils.files import delete_file
 from src.schemas.user_schema import (
     CreateUser, 
     ResponseUser, 
@@ -136,11 +137,7 @@ def update_user(
         db.commit()
         db.refresh(user)
 
-        if (
-            data.image and 
-            old_file_path != data.image and 
-            os.path.exists(old_file_path)
-        ):
+        if (data.image and old_file_path != data.image and os.path.exists(old_file_path)):
             os.remove(old_file_path)
 
     except Exception:
@@ -186,12 +183,8 @@ def delete_user(
         db.refresh(user)
 
         if file_path and os.path.exists(file_path):
-            filename = os.path.basename(file_path)
+            delete_file(f"{file_path}", "user")
 
-            os.makedirs("deleted_file/user", exist_ok=True)
-
-            destination = os.path.join("deleted_file/user", filename)
-            shutil.move(f"{file_path}", destination)
 
     except Exception:
         db.rollback()

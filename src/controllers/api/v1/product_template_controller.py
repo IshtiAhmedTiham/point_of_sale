@@ -21,6 +21,7 @@ from src.models.sub_category_model import SubCategoryModel
 from src.models.product_template_model import ProductTemplateModel
 from src.filters.product_template_filters import ProductTemplateFilters
 from src.validators.product_template_validator import validate_unique_code
+from src.utils.files import delete_file
 from src.schemas.product_template_schema import (
     CreateProductTemplate, 
     ResponseProductTemplate, 
@@ -258,12 +259,7 @@ def delete_product_template(
         db.commit()
         db.refresh(product_template)
 
-        file = os.path.basename(f"{file_path}")
-
-        os.makedirs("deleted_file/product_template", exist_ok=True)
-        destination = f"deleted_file/product_template/{file}"
-
-        shutil.move(f"{file_path}", destination)
+        delete_file(f"{file_path}", "product_template")
 
         return {"status" : "Data successfuly deleted"}
 

@@ -9,6 +9,9 @@ from fastapi import (
     File, 
     Form
 )
+
+from src.utils.files import save_file
+
 class CreateSubCategory(BaseModel):
     name : str
     category_name : str
@@ -29,11 +32,7 @@ def create_sub_category_form(
     status : str = Form("Active")
 ):
 
-    os.makedirs("uploads/sub_category", exist_ok=True)
-    file_path = f"uploads/sub_category/{datetime.now(timezone.utc)}{icon.filename}"
-
-    with open(file_path, "wb") as file:
-        shutil.copyfileobj(icon.file, file)
+    file_path = save_file(icon, "sub_category")
 
     return CreateSubCategory(
         name = name,

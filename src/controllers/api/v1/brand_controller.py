@@ -24,6 +24,7 @@ from src.models.product_template_model import ProductTemplateModel
 from src.services.brand.create_email_service import send_brand_email
 from src.services.brand.update_email_service import send_brand_email_for_update
 from src.services.brand.delete_email_service import send_brand_email_for_delete
+from src.utils.files import delete_file
 from src.schemas.brand_schema import (
     CreateBrand, 
     ResponseBrand, 
@@ -174,6 +175,7 @@ def delete_brand(
         )
         .first()
     )
+    
     if suplier:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
@@ -189,12 +191,7 @@ def delete_brand(
         db.commit()
         db.refresh(brand)
 
-        file_name = os.path.basename(f"{file_path}")
-
-        os.makedirs(f"deleted_file/brand", exist_ok=True)
-        destination = f"deleted_file/brand/{file_name}"
-
-        shutil.move(f"{file_path}", destination)
+        delete_file(f"{file_path}", "brand")
 
     except Exception:
         db.rollback()
