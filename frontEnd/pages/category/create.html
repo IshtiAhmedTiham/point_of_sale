@@ -1,0 +1,68 @@
+<div class="page-heading">
+    <div>
+        <span class="page-eyebrow">Catalog</span>
+        <h1>Create Category</h1>
+        <p>Add a new group to keep your products easy to browse.</p>
+    </div>
+
+    <a class="btn btn-light" href="#/category">
+        <i class="fas fa-arrow-left mr-1"></i> Back to list
+    </a>
+</div>
+
+<div class="category-form-wrap">
+
+    <div class="card">
+
+        <div class="card-header">Category details</div>
+
+        <div class="card-body">
+
+            <form id="submitForm">
+
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Enter Category Name"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="code">Code</label>
+                    <input type="text" class="form-control" id="code" name="code" placeholder="Enter Category Code"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <input type="text" class="form-control" id="description" name="description"
+                        placeholder="Enter Category Description" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select class="form-control" id="status" name="status">
+                        <option value="Active" selected>Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="icon">Image</label>
+                    <input type="file" class="form-control-file" id="icon" name="icon" accept="image/*" required>
+                    <img id="imagePreview" class="mt-2 border rounded" width="120" height="120"
+                        style="object-fit:cover; display: none;" alt="Image preview">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" id="submitButton">
+                    Create category
+                </button>
+
+            </form>
+
+            <p id="message" role="alert"></p>
+
+        </div>
+
+    </div>
+
+</div>

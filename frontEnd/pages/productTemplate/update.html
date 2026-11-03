@@ -1,0 +1,105 @@
+<div class="page-heading">
+    <div>
+        <span class="page-eyebrow">Operations</span>
+        <h1>Update Product Template</h1>
+        <p>Edit product details and keep your catalog current.</p>
+    </div>
+
+    <a class="btn btn-light" href="#/product_template">
+        <i class="fas fa-arrow-left mr-1"></i> Back to list
+    </a>
+</div>
+
+<div class="category-form-wrap">
+
+    <div class="card">
+
+        <div class="card-header">Product template details</div>
+
+        <div class="card-body">
+
+            <form id="submitForm">
+
+                <input type="hidden" id="productTemplateId">
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="name">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Enter Product Name"
+                            required>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label for="code">Code</label>
+                        <input type="text" class="form-control" id="code" name="code" placeholder="Enter Product Code"
+                            required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="category_name">Category</label>
+                        <select class="form-control" id="category_name" name="category_name" required>
+                            <option value="">Select category</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label for="sub_category_name">Sub Category</label>
+                        <select class="form-control" id="sub_category_name" name="sub_category_name" required>
+                            <option value="">Select sub category</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label for="brand_name">Brand</label>
+                        <select class="form-control" id="brand_name" name="brand_name" required>
+                            <option value="">Select brand</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="mrp">MRP</label>
+                        <input type="number" step="0.01" class="form-control" id="mrp" name="mrp" placeholder="0.00"
+                            required>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label for="tax">Tax</label>
+                        <input type="number" step="0.01" class="form-control" id="tax" name="tax" placeholder="0.00"
+                            required>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label for="openstock">Open Stock</label>
+                        <input type="text" class="form-control" id="openstock" name="openstock"
+                            placeholder="Enter Open Stock" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3"
+                        placeholder="Enter Product Description" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="image">Image</label>
+                    <input type="file" class="form-control-file" id="image" name="image" accept="image/*" required>
+                    <img id="imagePreview" class="mt-2 border rounded" width="120" height="120"
+                        style="object-fit:cover;" alt="Current image">
+                    <small class="form-text text-muted">Select a new image to save this update.</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Update product template</button>
+                <a class="btn btn-secondary btn-block mt-2" href="#/product_template">Cancel</a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

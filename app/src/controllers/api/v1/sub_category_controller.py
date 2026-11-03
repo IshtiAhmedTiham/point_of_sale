@@ -1,0 +1,203 @@
+import os
+import shutil
+from typing import Annotated
+from datetime import datetime, timezone
+
+from sqlalchemy.orm import Session
+from fastapi_pagination import Page, Params
+from fastapi_pagination.ext.sqlalchemy import paginate
+from fastapi import (
+    APIRouter, 
+    status, 
+    Depends, 
+    HTTPException, 
+    Query
+)
+
+from app.src.config.database import get_db
+from app.src.models.category_model import CategoryModel
+from app.src.models.sub_category_model import SubCategoryModel
+from app.src.filters.sub_category_filters import SubCategoryFilter
+from app.src.models.product_template_model import ProductTemplateModel
+from app.src.validators.sub_category_validator import validate_unique_code
+from app.src.utils.files import delete_file
+from app.src.schemas.sub_category_schema import (
+    CreateSubCategory, 
+    ResponseSubCategory, 
+    create_sub_category_form
+)
+
+
+router = APIRouter()
+
+
+@router.post("", response_model = ResponseSubCategory, status_code=status.HTTP_201_CREATED)
+def create_sub_category(
+    data : CreateSubCategory = Depends(validate_unique_code), 
+    db : Session = Depends(get_db)
+):
+    category = (
+        db.query(CategoryModel)
+        .filter(
+            CategoryModel.name == data.category_name, 
+            CategoryModel.deleted_at.is_(None)
+        )
+        .first()
+    )
+    if not category:
+        raise HTTPException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            detail = "Category not found"
+        )
+
+    sub_category = SubCategoryModel(
+        name = data.name,
+        category_id = category.id,
+        code = data.code,
+        icon = data.icon,
+        description =  data.description,
+        status = data.status,
+        deleted_at = data.deleted_at
+    )
+
+    try:
+        db.add(sub_category)
+        db.commit()
+        db.refresh(sub_category)
+
+        return sub_category
+
+    except Exception:
+        os.remove(data.icon)
+        db.rollback()
+        raise
+
+
+
+@router.get("", response_model = Page[ResponseSubCategory], status_code = status.HTTP_200_OK)
+def read_sub_category(
+    filters : Annotated[SubCategoryFilter, Query()] = None, 
+    db : Session = Depends(get_db)
+):
+    sub_category = (
+        db.query(SubCategoryModel)
+        .filter(SubCategoryModel.deleted_at.is_(None))
+    )
+
+    if filters.name:
+        sub_category = sub_category.filter(SubCategoryModel.name.like(f"%{filters.name}%"))
+
+    if filters.code:
+        sub_category = sub_category.filter(SubCategoryModel.code.like(f"%{filters.code}%"))
+
+    return paginate(db, sub_category, params=Params(size=20))
+
+
+
+@router.put("/{id}", response_model=ResponseSubCategory, status_code=status.HTTP_200_OK)
+def update_sub_category(
+    id: int, 
+    data : CreateSubCategory = Depends(create_sub_category_form), 
+    db : Session = Depends(get_db)
+):
+    sub_category = (
+        db.query(SubCategoryModel)
+        .filter(
+            SubCategoryModel.id == id, 
+            SubCategoryModel.deleted_at.is_(None)
+            )
+        .first()
+    )
+    if not sub_category:
+        raise HTTPException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            detail = "Data not found"
+        )
+
+    category = (
+        db.query(CategoryModel)
+        .filter(
+            CategoryModel.name == data.category_name, 
+            CategoryModel.deleted_at.is_(None)
+        )
+        .first()
+    )
+    if not category:
+        raise HTTPException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            detail = "Category not found"
+        )
+
+    file_path = sub_category.icon
+
+    try:
+        update_data = data.model_dump(exclude={"category_name"})
+        for key,value in update_data.items():
+            setattr(sub_category,key,value)
+
+        sub_category.category_id = category.id
+
+        db.commit()
+        db.refresh(sub_category)
+
+        os.remove(f"{file_path}")
+
+        return sub_category
+
+    except Exception:
+        db.rollback()
+        os.remove(data.icon)
+        raise
+
+    
+
+@router.delete("/{id}", status_code=status.HTTP_200_OK)
+def delete_sub_category(
+    id : int, 
+    db : Session = Depends(get_db)
+):
+    sub_category = (
+        db.query(SubCategoryModel)
+        .filter(
+            SubCategoryModel.id == id, 
+            SubCategoryModel.deleted_at.is_(None)
+        )
+        .first()
+    )
+    if not sub_category:
+        raise HTTPException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            detail = "Data Not Found"
+        )
+
+
+    product_template = (
+        db.query(ProductTemplateModel)
+        .filter(
+            ProductTemplateModel.sub_category_id == id, 
+            ProductTemplateModel.deleted_at.is_(None)
+        )
+        .first()
+    )
+    if product_template:
+        raise HTTPException(
+            status_code = status.HTTP_409_CONFLICT,
+            detail = "In Product Template, Sub Category is exists"
+        )
+
+
+    try:
+        file_path = sub_category.icon
+
+        sub_category.deleted_at = datetime.now(timezone.utc)
+
+        db.commit()
+        db.refresh(sub_category)
+
+        delete_file(f"{file_path}", "sub_category")
+
+        return ("status : Data successfuly deleted")
+    
+    except Exception:
+        db.rollback()
+        raise

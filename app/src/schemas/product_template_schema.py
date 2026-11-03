@@ -1,0 +1,72 @@
+import os
+import shutil
+from typing import Optional
+from datetime import datetime, timezone
+
+from pydantic import BaseModel
+from fastapi import (
+    UploadFile, 
+    File, 
+    Form
+)
+
+from app.src.utils.files import save_file
+
+
+class CreateProductTemplate(BaseModel):
+    name : str
+    code : str
+    category_name : str
+    sub_category_name : str
+    brand_name : str
+    mrp : float
+    tax : float
+    description : str
+    openstock : str
+    image : str
+    deleted_at : Optional[datetime] = None
+
+
+
+def create_product_template_form(
+    name : str = Form(...),
+    code : str = Form(...),
+    category_name : str = Form(...),
+    sub_category_name : str = Form(...),
+    brand_name : str = Form(...),
+    mrp : float = Form(...),
+    tax : float = Form(...),
+    description : str = Form(...),
+    openstock : str = Form(...),
+    image : UploadFile = File(...)
+):
+
+    file_path = save_file(image, "product_template")
+
+    return CreateProductTemplate(
+        name = name,
+        code = code,
+        category_name = category_name,
+        sub_category_name = sub_category_name,
+        brand_name = brand_name,
+        mrp = mrp,
+        tax = tax,
+        description = description,
+        openstock = openstock,
+        image = file_path
+    )
+
+
+class ResponseProductTemplate(BaseModel):
+    id : int
+    name : str
+    code : str
+    category_id : int
+    sub_category_id : int
+    brand_id : int
+    mrp : float
+    tax : float
+    description : str
+    openstock : str
+    image : str
+    deleted_at : Optional[datetime] = None

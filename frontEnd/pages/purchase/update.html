@@ -1,0 +1,130 @@
+<div class="page-heading">
+    <div>
+        <span class="page-eyebrow">Operations</span>
+        <h1>Update Purchase</h1>
+        <p>Edit purchase details and keep your stock records current.</p>
+    </div>
+
+    <a class="btn btn-light" href="#/purchase">
+        <i class="fas fa-arrow-left mr-1"></i> Back to list
+    </a>
+</div>
+
+<div class="category-form-wrap">
+
+    <div class="card">
+
+        <div class="card-header">Purchase details</div>
+
+        <div class="card-body">
+
+            <form id="submitForm">
+
+                <input type="hidden" id="purchaseId">
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="date">Date</label>
+                        <input type="datetime-local" class="form-control" id="date" name="date" required>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label for="suplier_name">Supplier</label>
+                        <select class="form-control" id="suplier_name" name="suplier_name" required>
+                            <option value="">Select supplier</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="product_name">Product</label>
+                        <select class="form-control" id="product_name" name="product_name" required>
+                            <option value="">Select product</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label for="brand_name">Brand</label>
+                        <select class="form-control" id="brand_name" name="brand_name" required>
+                            <option value="">Select brand</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="unit_cost">Unit Cost</label>
+                        <input type="number" step="0.01" class="form-control" id="unit_cost" name="unit_cost"
+                            placeholder="0.00" required>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label for="quantity">Quantity</label>
+                        <input type="number" step="1" min="1" class="form-control" id="quantity" name="quantity"
+                            placeholder="0" required>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label for="tax">Tax</label>
+                        <input type="number" step="0.01" class="form-control" id="tax" name="tax" placeholder="0.00"
+                            required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="sub_total">Sub Total</label>
+                        <input type="number" step="0.01" class="form-control" id="sub_total" name="sub_total"
+                            placeholder="0.00" required>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label for="total">Total</label>
+                        <input type="number" step="0.01" class="form-control" id="total" name="total"
+                            placeholder="0.00" required>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label for="discount">Discount</label>
+                        <input type="number" step="0.01" class="form-control" id="discount" name="discount"
+                            placeholder="0.00" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="net_total">Net Total</label>
+                        <input type="number" step="0.01" class="form-control" id="net_total" name="net_total"
+                            placeholder="0.00" required>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label for="payment_method">Payment Method</label>
+                        <input type="text" class="form-control" id="payment_method" name="payment_method"
+                            placeholder="Enter Payment Method" required>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label for="pay">Pay</label>
+                        <input type="number" step="0.01" class="form-control" id="pay" name="pay" placeholder="0.00"
+                            required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="due">Due</label>
+                    <input type="number" step="0.01" class="form-control" id="due" name="due" placeholder="0.00"
+                        required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Update purchase</button>
+                <a class="btn btn-secondary btn-block mt-2" href="#/purchase">Cancel</a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
