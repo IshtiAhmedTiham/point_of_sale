@@ -1,12 +1,7 @@
 import {
     attachDelete,
-    buildNameMap,
-    emptyRow,
-    escapeHtml,
     fetchItems,
-    formatMoney,
-    imageCell,
-    nameFromMap
+    imageCell
 } from "../../utils/helpers.js"
 
 export async function productTemplatePage() {
@@ -17,8 +12,7 @@ export async function productTemplatePage() {
 
     const tbody = document.getElementById("tbody")
 
-    attachDelete(tbody, "product_template", render)
-
+    
     async function render() {
         const [items, categories, subCategories, brands] = await Promise.all([
             fetchItems("product_template"),
@@ -26,35 +20,28 @@ export async function productTemplatePage() {
             fetchItems("subcategory"),
             fetchItems("brand")
         ])
-
+        
         if (!items.length) {
-            tbody.innerHTML = emptyRow(
-                12,
-                "fa-boxes",
-                "No product templates yet",
-                "Product templates added to the catalog will appear here."
-            )
+            main.innerHTML = "<p>Category not found.</p>"
             return
         }
 
-        const categoriesById = buildNameMap(categories)
-        const subCategoriesById = buildNameMap(subCategories)
-        const brandsById = buildNameMap(brands)
         let serial = 1
+
 
         tbody.innerHTML = items.map((item) => `
             <tr>
                 <td>${serial++}</td>
                 <td>${imageCell(item.image, item.name)}</td>
-                <td><strong>${escapeHtml(item.name)}</strong></td>
-                <td>${escapeHtml(item.code)}</td>
-                <td>${escapeHtml(nameFromMap(categoriesById, item.category_id, "Category"))}</td>
-                <td>${escapeHtml(nameFromMap(subCategoriesById, item.sub_category_id, "Sub category"))}</td>
-                <td>${escapeHtml(nameFromMap(brandsById, item.brand_id, "Brand"))}</td>
-                <td>${formatMoney(item.mrp)}</td>
-                <td>${formatMoney(item.tax)}</td>
-                <td>${escapeHtml(item.description)}</td>
-                <td>${escapeHtml(item.openstock)}</td>
+                <td><strong>${item.name}</strong></td>
+                <td>${item.code}</td>
+                <td>${item.category_id ? (categories.find((category) => category.id === item.category_id)?.name ?? `Category #${item.category_id}`) : "—"}</td>
+                <td>${item.sub_category_id ? (subCategories.find((subCategory) => subCategory.id === item.sub_category_id)?.name ?? `Sub category #${item.sub_category_id}`) : "—"}</td>
+                <td>${item.brand_id ? (brands.find((brand) => brand.id === item.brand_id)?.name ?? `Brand #${item.brand_id}`) : "—"}</td>
+                <td>${(item.mrp||0).toFixed(2)}</td>
+                <td>${(item.tax||0).toFixed(2)}</td>
+                <td>${item.description}</td>
+                <td>${item.openstock}</td>
                 <td class="text-center">
                     <a class="btn table-action table-action-edit" href="#/product_template/update?id=${item.id}" title="Edit">
                         <i class="fas fa-edit"></i>
@@ -65,6 +52,8 @@ export async function productTemplatePage() {
                 </td>
             </tr>
         `).join("")
+        
+        attachDelete(tbody, "product_template", render, "product_template")
     }
 
     render()

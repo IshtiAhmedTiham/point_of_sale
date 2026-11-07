@@ -1,10 +1,6 @@
 import {
     fetchItems,
-    imagePreview,
     loadRecord,
-    setSelectOptions,
-    setValue,
-    showNotFound,
     updateRecord
 } from "../../utils/helpers.js"
 
@@ -21,18 +17,29 @@ export async function suplierUpdatePage(params) {
     ])
 
     if (!suplier) {
-        showNotFound(main)
+        main.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <strong>Record not found</strong>
+                <span>The requested record could not be found.</span>
+            </div>
+        `
         return
     }
 
     document.getElementById("suplierId").value = suplier.id
-    setValue("name", suplier.name)
-    setSelectOptions("brand_name", brands, suplier.brand_id, "Select brand")
-    setValue("phone", suplier.phone)
-    setValue("address", suplier.address)
-    setValue("account_no", suplier.account_no)
-    setValue("opening_balance", suplier.opening_balance)
-    imagePreview("imagePreview", suplier.image)
+    document.getElementById("name").value = suplier.name ?? ""
+    const brandSelect = document.getElementById("brand_name")
+    brandSelect.innerHTML = `<option value="">Select brand</option>` + brands.map((brand) => `
+        <option value="${brand.name}" ${String(brand.id) === String(suplier.brand_id) ? "selected" : ""}>
+            ${brand.name}
+        </option>
+    `).join("")
+    document.getElementById("phone").value = suplier.phone ?? ""
+    document.getElementById("address").value = suplier.address ?? ""
+    document.getElementById("account_no").value = suplier.account_no ?? ""
+    document.getElementById("opening_balance").value = suplier.opening_balance ?? ""
+    document.getElementById("imagePreview").src = `http://127.0.0.1:5500/${suplier.image}`
 
     const form = document.getElementById("submitForm")
 

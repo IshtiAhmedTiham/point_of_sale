@@ -1,10 +1,6 @@
 import {
     fetchItems,
-    imagePreview,
     loadRecord,
-    setSelectOptions,
-    setValue,
-    showNotFound,
     updateRecord
 } from "../../utils/helpers.js"
 
@@ -23,21 +19,42 @@ export async function productTemplateUpdatePage(params) {
     ])
 
     if (!productTemplate) {
-        showNotFound(main)
+        main.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <strong>Record not found</strong>
+                <span>The requested record could not be found.</span>
+            </div>
+        `
         return
     }
 
     document.getElementById("productTemplateId").value = productTemplate.id
-    setValue("name", productTemplate.name)
-    setValue("code", productTemplate.code)
-    setSelectOptions("category_name", categories, productTemplate.category_id, "Select category")
-    setSelectOptions("sub_category_name", subCategories, productTemplate.sub_category_id, "Select sub category")
-    setSelectOptions("brand_name", brands, productTemplate.brand_id, "Select brand")
-    setValue("mrp", productTemplate.mrp)
-    setValue("tax", productTemplate.tax)
-    setValue("description", productTemplate.description)
-    setValue("openstock", productTemplate.openstock)
-    imagePreview("imagePreview", productTemplate.image)
+    document.getElementById("name").value = productTemplate.name ?? ""
+    document.getElementById("code").value = productTemplate.code ?? ""
+    const categorySelect = document.getElementById("category_name")
+    categorySelect.innerHTML = `<option value="">Select category</option>` + categories.map((category) => `
+        <option value="${category.name}" ${String(category.id) === String(productTemplate.category_id) ? "selected" : ""}>
+            ${category.name}
+        </option>
+    `).join("")
+    const subCategorySelect = document.getElementById("sub_category_name")
+    subCategorySelect.innerHTML = `<option value="">Select sub category</option>` + subCategories.map((subCategory) => `
+        <option value="${subCategory.name}" ${String(subCategory.id) === String(productTemplate.sub_category_id) ? "selected" : ""}>
+            ${subCategory.name}
+        </option>
+    `).join("")
+    const brandSelect = document.getElementById("brand_name")
+    brandSelect.innerHTML = `<option value="">Select brand</option>` + brands.map((brand) => `
+        <option value="${brand.name}" ${String(brand.id) === String(productTemplate.brand_id) ? "selected" : ""}>
+            ${brand.name}
+        </option>
+    `).join("")
+    document.getElementById("mrp").value = productTemplate.mrp ?? ""
+    document.getElementById("tax").value = productTemplate.tax ?? ""
+    document.getElementById("description").value = productTemplate.description ?? ""
+    document.getElementById("openstock").value = productTemplate.openstock ?? ""
+    document.getElementById("imagePreview").src = `http://127.0.0.1:5500/${productTemplate.image}`
 
     const form = document.getElementById("submitForm")
 

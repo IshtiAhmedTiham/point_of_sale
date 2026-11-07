@@ -1,14 +1,15 @@
+import { attachDelete, imageCell, fetchItems} from "../../utils/helpers.js"
+
 export async function categoryPage() {
     const main = document.getElementById("main-content")
 
-    async function render() {
-        const categoryContent = await fetch("pages/category/read.html")
-        main.innerHTML = await categoryContent.text()
+    const categoryContent = await fetch("pages/category/read.html")
+    main.innerHTML = await categoryContent.text()
 
-        const tbody = document.getElementById("tbody")
-        const response = await fetch("http://127.0.0.1:8000/api/v1/category/")
-        const data = await response.json()
-        const items = data.items ?? []
+    const tbody = document.getElementById("tbody")
+
+    async function render() {
+        const items = await fetchItems("category")
 
         if (!items.length) {
             tbody.innerHTML = `
@@ -29,9 +30,7 @@ export async function categoryPage() {
 
         tbody.innerHTML = items.map(value => {
             const statusClass = value.status === "Active" ? "status-active" : "status-inactive"
-            const image = value.icon
-                ? `<img class="table-thumb" src="http://127.0.0.1:5500/${value.icon}" alt="${value.name}">`
-                : `<span class="text-muted">—</span>`
+            const image = imageCell(value.icon)
 
             return `
                 <tr>
@@ -40,12 +39,20 @@ export async function categoryPage() {
                     <td><strong>${value.name}</strong></td>
                     <td>${value.code}</td>
                     <td>${value.description}</td>
-                    <td><span class="status-badge ${statusClass}">${value.status}</span></td>
+                    <td>
+                        <span class="status-badge ${statusClass}">
+                            ${value.status}
+                        </span>
+                    </td>
                     <td class="text-center">
-                        <a class="btn table-action table-action-edit" href="#/category/update?id=${value.id}" title="Edit">
+                        <a class="btn table-action table-action-edit"
+                           href="#/category/update?id=${value.id}">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <button class="btn table-action table-action-delete" data-delete="${value.id}" title="Delete">
+
+                        <button
+                            class="btn table-action table-action-delete"
+                            data-delete="${value.id}">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -53,20 +60,7 @@ export async function categoryPage() {
             `
         }).join("")
 
-        tbody.addEventListener("click", async (event) => {
-            const btn = event.target.closest("[data-delete]")
-            if (!btn) return
-
-            const id = btn.dataset.delete
-
-            await fetch(`http://127.0.0.1:8000/api/v1/category/${id}`, {
-                method: "DELETE",
-                body: ""
-            })
-
-            alert("Data Successfully Deleted")
-            render()
-        })
+        attachDelete(tbody, "category", render)
     }
 
     render()

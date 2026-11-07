@@ -1,9 +1,3 @@
-function errorText(error, fallback) {
-    if (typeof error.detail === "string") return error.detail
-    if (Array.isArray(error.detail)) return error.detail.map((item) => item.msg).join(", ")
-    return fallback
-}
-
 export async function subCategoryCratePage() {
     let categoryContent = await fetch("pages/subCategory/create.html")
 
@@ -11,12 +5,9 @@ export async function subCategoryCratePage() {
     main.innerHTML = await categoryContent.text()
 
     let form = document.getElementById("submitForm")
-    let message = document.getElementById("message")
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault()
-
-        message.textContent = ""
 
         let formData = new FormData(form)
 
@@ -26,11 +17,7 @@ export async function subCategoryCratePage() {
         })
 
         if (response.ok) {
-            window.location.hash = "#/subcategory"
-            return
+            window.location.hash = "#/subcategory"  
         }
-
-        let error = await response.json().catch(() => ({}))
-        message.textContent = errorText(error, "Sub Category creation failed")
     })
 }

@@ -1,7 +1,5 @@
-import os
-import shutil
 from typing import Optional
-from datetime import datetime, timezone
+from datetime import datetime
 
 from pydantic import BaseModel, Field
 from fastapi import (
@@ -40,6 +38,37 @@ def create_category_form(
         description = description,
         icon = file_path,
         status = status 
+    )
+
+
+
+class UpdateCategory(BaseModel):
+    name: str
+    code: str
+    description: str
+    icon: Optional[str] = None
+    status: Optional[str] = "Active"
+
+
+
+def update_category_form(
+    name : str = Form(...),
+    code : str = Form(...),
+    description : str = Form(...),
+    icon : Optional[UploadFile] = File(None),
+    status : Optional[str] = Form("Active")
+):
+    file_path = None
+
+    if icon is not None and icon.filename:
+        file_path = save_file(icon, "category")
+
+    return UpdateCategory(
+        name = name,
+        code = code,
+        description = description,
+        icon = file_path,
+        status = status
     )
 
 

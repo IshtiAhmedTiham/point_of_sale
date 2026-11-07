@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import Annotated
+from typing import Annotated,cast
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
@@ -14,7 +14,7 @@ from fastapi import (
     Query
 )
 
-from app.src.config.database import get_db
+from app.src.config.database import get_db, DbSession
 from app.src.models.brand_model import BrandModel
 from app.src.models.category_model import CategoryModel
 from app.src.models.sub_category_model import SubCategoryModel
@@ -32,10 +32,10 @@ from app.src.schemas.product_template_schema import (
 router = APIRouter()
 
 
-@router.post("", response_model=ResponseProductTemplate, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ResponseProductTemplate, status_code=status.HTTP_201_CREATED)
 def create_product_template(
-    data : CreateProductTemplate = Depends(validate_unique_code), 
-    db : Session = Depends(get_db)
+    db : DbSession,
+    data : CreateProductTemplate = Depends(validate_unique_code)
 ):
     category = (
         db.query(CategoryModel)
@@ -110,9 +110,9 @@ def create_product_template(
 
 
 
-@router.get("", response_model=Page[ResponseProductTemplate], status_code=status.HTTP_200_OK)
+@router.get("/", response_model=Page[ResponseProductTemplate], status_code=status.HTTP_200_OK)
 def read_product_template(
-    filters : Annotated[ProductTemplateFilters, Query()] = None, 
+    filters : Annotated[ProductTemplateFilters, Query()], 
     db : Session = Depends(get_db)
 ):
     product_template = (
@@ -132,9 +132,9 @@ def read_product_template(
 
 @router.put("/{id}", response_model=ResponseProductTemplate, status_code=status.HTTP_200_OK)
 def update_product_template(
+    db : DbSession,
     id : int, 
-    data : CreateProductTemplate = Depends(create_product_template_form), 
-    db : Session = Depends(get_db)
+    data : CreateProductTemplate = Depends(create_product_template_form)
 ):
     product_template = (
         db.query(ProductTemplateModel)
@@ -145,10 +145,9 @@ def update_product_template(
         .first()
     )
 
-    file_path = data.image
-
     if not product_template:
-        os.remove(f"{file_path}")
+        if data.image and os.path.exists(data.image):
+            os.remove(data.image)
 
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -165,7 +164,8 @@ def update_product_template(
         .first()
     )
     if not category:
-        os.remove(f"{file_path}")
+        if data.image and os.path.exists(data.image):
+            os.remove(data.image)
 
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -182,7 +182,8 @@ def update_product_template(
         .first()
     )
     if not sub_category:
-        os.remove(f"{file_path}")
+        if data.image and os.path.exists(data.image):
+            os.remove(data.image)
 
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -199,17 +200,19 @@ def update_product_template(
         .first()
     )
     if not brand:
-        os.remove(f"{file_path}")
+        if data.image and os.path.exists(data.image):
+            os.remove(data.image)
 
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Brand not found"
         )
 
-    old_file_path = product_template.image
+    old_file_path = cast(str, product_template.image)
+    new_file_path = cast(str, data.image)
 
     try:
-        update_data = data.model_dump(exclude={"category_name", "sub_category_name", "brand_name"})
+        update_data = data.model_dump(exclude={"category_name", "sub_category_name", "brand_name","image"})
         for key, value in update_data.items():
             setattr(product_template, key, value)
 
@@ -217,10 +220,14 @@ def update_product_template(
         product_template.sub_category_id = sub_category.id
         product_template.brand_id = brand.id
 
+        if new_file_path:
+            product_template.image = new_file_path
+
         db.commit()
         db.refresh(product_template)
 
-        os.remove(f"{old_file_path}")
+        if new_file_path and old_file_path and os.path.exists(old_file_path):
+            os.remove(old_file_path)
 
         return product_template
     
@@ -233,8 +240,8 @@ def update_product_template(
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
 def delete_product_template(
-    id : int, 
-    db : Session = Depends(get_db)
+    db : DbSession, 
+    id : int
 ):
     product_template = (
         db.query(ProductTemplateModel)

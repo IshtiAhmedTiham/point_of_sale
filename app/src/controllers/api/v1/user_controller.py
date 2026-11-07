@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import Annotated
+from typing import Annotated, cast
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
@@ -15,7 +15,7 @@ from fastapi import (
     BackgroundTasks
 )
 
-from app.src.config.database import get_db
+from app.src.config.database import get_db, DbSession
 from app.src.models.user_model import UserModel
 from app.src.filters.user_filters import UserFilters
 from app.src.validators.user_validator import validate_user
@@ -33,11 +33,11 @@ from app.src.schemas.user_schema import (
 router = APIRouter()
 
 
-@router.post("", response_model=ResponseUser, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ResponseUser, status_code=status.HTTP_201_CREATED)
 def create_user(
+    db : DbSession,
     background_task:BackgroundTasks, 
-    data : CreateUser = Depends(validate_user), 
-    db : Session = Depends(get_db)
+    data : CreateUser = Depends(validate_user)
 ):
     if not data.password == data.confirm_password:
         raise HTTPException(
@@ -74,10 +74,10 @@ def create_user(
 
 
 
-@router.get("", response_model=Page[ResponseUser], status_code=status.HTTP_200_OK)
+@router.get("/", response_model=Page[ResponseUser], status_code=status.HTTP_200_OK)
 def read_user(
-    filters : Annotated[UserFilters, Query()] = None, 
-    db : Session = Depends(get_db)
+    db : DbSession,
+    filters : Annotated[UserFilters, Query()]
 ):
     suplier = (
         db.query(UserModel)
@@ -96,10 +96,10 @@ def read_user(
 
 @router.put("/{id}", response_model=ResponseUser, status_code=status.HTTP_200_OK)
 def update_user(
+    db : DbSession,
     background_task : BackgroundTasks, 
     id : int, 
-    data : CreateUser = Depends(create_user_form), 
-    db : Session = Depends(get_db)
+    data : CreateUser = Depends(create_user_form)
 ):
     if data.password != data.confirm_password:
         raise HTTPException(
@@ -124,7 +124,8 @@ def update_user(
             detail="User not found"
         )
 
-    old_file_path = user.image
+    old_file_path = cast(str, user.image)
+    new_file_path = cast(str, data.image)
 
     try:
         updated_data = data.model_dump(exclude={"image"})
@@ -132,7 +133,9 @@ def update_user(
             setattr(user, key, value)
 
         user.updated_at = datetime.now(timezone.utc)
-        user.image = data.image
+
+        if new_file_path:
+            user.image = new_file_path
 
         db.commit()
         db.refresh(user)
@@ -156,9 +159,9 @@ def update_user(
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
 def delete_user(
+    db : DbSession,
     background_task : BackgroundTasks, 
-    id: int, 
-    db: Session = Depends(get_db)
+    id: int
 ):
     user = (
         db.query(UserModel)

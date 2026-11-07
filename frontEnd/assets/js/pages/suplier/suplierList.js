@@ -1,12 +1,7 @@
 import {
     attachDelete,
-    buildNameMap,
-    emptyRow,
-    escapeHtml,
     fetchItems,
-    formatMoney,
-    imageCell,
-    nameFromMap
+    imageCell
 } from "../../utils/helpers.js"
 
 export async function suplierPage() {
@@ -26,28 +21,32 @@ export async function suplierPage() {
         ])
 
         if (!items.length) {
-            tbody.innerHTML = emptyRow(
-                9,
-                "fa-truck",
-                "No suppliers yet",
-                "Supplier partners added to the store will appear here."
-            )
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9">
+                        <div class="empty-state">
+                            <i class="fas fa-truck"></i>
+                            <strong>No suppliers yet</strong>
+                            <span>Supplier partners added to the store will appear here.</span>
+                        </div>
+                    </td>
+                </tr>
+            `
             return
         }
 
-        const brandsById = buildNameMap(brands)
         let serial = 1
 
         tbody.innerHTML = items.map((item) => `
             <tr>
                 <td>${serial++}</td>
                 <td>${imageCell(item.image, item.name)}</td>
-                <td><strong>${escapeHtml(item.name)}</strong></td>
-                <td>${escapeHtml(nameFromMap(brandsById, item.brand_id, "Brand"))}</td>
-                <td>${escapeHtml(item.phone)}</td>
-                <td>${escapeHtml(item.address)}</td>
-                <td>${escapeHtml(item.account_no)}</td>
-                <td>${formatMoney(item.opening_balance)}</td>
+                <td><strong>${item.name}</strong></td>
+                <td>${item.brand_id ? (brands.find((brand) => brand.id === item.brand_id)?.name ?? `Brand #${item.brand_id}`) : "—"}</td>
+                <td>${item.phone}</td>
+                <td>${item.address}</td>
+                <td>${item.account_no}</td>
+                <td>${(item.opening_balance||0).toFixed(2)}</td>
                 <td class="text-center">
                     <a class="btn table-action table-action-edit" href="#/suplier/update?id=${item.id}" title="Edit">
                         <i class="fas fa-edit"></i>
@@ -58,6 +57,9 @@ export async function suplierPage() {
                 </td>
             </tr>
         `).join("")
+
+        attachDelete(tbody, "suplier", render, "suplier")
+
     }
 
     render()

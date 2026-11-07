@@ -1,7 +1,5 @@
-import os
-import shutil
 from typing import Optional
-from datetime import datetime, timezone
+from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field
 from fastapi import (

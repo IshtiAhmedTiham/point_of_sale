@@ -1,10 +1,7 @@
 import {
     attachDelete,
-    emptyRow,
-    escapeHtml,
     fetchItems,
-    imageCell,
-    statusBadge
+    imageCell
 } from "../../utils/helpers.js"
 
 export async function userPage() {
@@ -21,12 +18,17 @@ export async function userPage() {
         const items = await fetchItems("user")
 
         if (!items.length) {
-            tbody.innerHTML = emptyRow(
-                10,
-                "fa-user-shield",
-                "No users yet",
-                "User accounts added to the store will appear here."
-            )
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="10">
+                        <div class="empty-state">
+                            <i class="fas fa-user-shield"></i>
+                            <strong>No users yet</strong>
+                            <span>User accounts added to the store will appear here.</span>
+                        </div>
+                    </td>
+                </tr>
+            `
             return
         }
 
@@ -36,13 +38,13 @@ export async function userPage() {
             <tr>
                 <td>${serial++}</td>
                 <td>${imageCell(item.image, item.name)}</td>
-                <td><strong>${escapeHtml(item.name)}</strong></td>
-                <td>${escapeHtml(item.email)}</td>
-                <td>${escapeHtml(item.role)}</td>
-                <td>${escapeHtml(item.branch)}</td>
-                <td>${escapeHtml(item.phone)}</td>
-                <td>${escapeHtml(item.address)}</td>
-                <td>${statusBadge(item.status)}</td>
+                <td><strong>${item.name}</strong></td>
+                <td>${item.email}</td>
+                <td>${item.role}</td>
+                <td>${item.branch}</td>
+                <td>${item.phone}</td>
+                <td>${item.address}</td>
+                <td>${item.status}</td>
                 <td class="text-center">
                     <a class="btn table-action table-action-edit" href="#/user/update?id=${item.id}" title="Edit">
                         <i class="fas fa-edit"></i>
@@ -53,6 +55,9 @@ export async function userPage() {
                 </td>
             </tr>
         `).join("")
+
+        attachDelete(tbody, "user", render, "user")
+
     }
 
     render()

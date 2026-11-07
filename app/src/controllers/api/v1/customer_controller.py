@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import Annotated
+from typing import Annotated,cast
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
@@ -15,7 +15,7 @@ from fastapi import (
     BackgroundTasks
 )
 
-from app.src.config.database import get_db
+from app.src.config.database import get_db, DbSession
 from app.src.models.customer_model import CustomerModel
 from app.src.filters.customer_filters import CustomerFilter
 from app.src.validators.customer_validator import validators
@@ -33,11 +33,11 @@ from app.src.schemas.customer_schema import (
 router = APIRouter()
 
 
-@router.post("", response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
 def create_customer(
+     db : DbSession,
     background_task : BackgroundTasks, 
-    data : CreateCustomer = Depends(validators), 
-    db : Session = Depends(get_db)
+    data : CreateCustomer = Depends(validators)
 ):
     customer = CustomerModel(
         name = data.name,
@@ -66,10 +66,10 @@ def create_customer(
 
 
 
-@router.get("", response_model=Page[CustomerResponse], status_code=status.HTTP_200_OK)
+@router.get("/", response_model=Page[CustomerResponse], status_code=status.HTTP_200_OK)
 def read_customer(
-    filters : Annotated[CustomerFilter, Query()] = None, 
-    db : Session = Depends(get_db)
+     db : DbSession,
+    filters : Annotated[CustomerFilter, Query()] 
 ):
     customer = (
         db.query(CustomerModel)
@@ -94,10 +94,10 @@ def read_customer(
 
 @router.put("/{id}", response_model=CustomerResponse, status_code=status.HTTP_200_OK)
 def update_customer(
+     db : DbSession,
     background_task : BackgroundTasks, 
     id: int, 
-    data : CreateCustomer = Depends(create_customer_form), 
-    db : Session = Depends(get_db)
+    data : CreateCustomer = Depends(create_customer_form)
 ):
     customer = (
         db.query(CustomerModel)
@@ -108,29 +108,31 @@ def update_customer(
         .first()
     )
 
-    file_path = data.icon
-
     if not customer:
-        os.remove(f"{file_path}")
+        if data.icon and os.path.exists(data.icon):
+            os.remove(data.icon)
 
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Data not found"
         )
 
-    old_file_path = customer.icon
+    old_file_path = cast(str, customer.icon)
+    new_file_path = cast(str, data.icon)
 
     try:
-        update_data = data.model_dump()
+        update_data = data.model_dump(exclude={"icon"})
         for key,value in update_data.items():
             setattr(customer, key, value)
 
-        customer.updated_at = datetime.now(timezone.utc)
+        if new_file_path:
+            customer.icon = new_file_path
         
         db.commit()
         db.refresh(customer)
         
-        os.remove(f"{old_file_path}")
+        if new_file_path and old_file_path and os.path.exists(old_file_path):
+            os.remove(old_file_path)
 
     except Exception:
         db.rollback()
@@ -144,9 +146,9 @@ def update_customer(
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
 def delete_customer(
+    db : DbSession,
     background_task : BackgroundTasks, 
-    id : int, 
-    db : Session = Depends(get_db)
+    id : int
 ):
     customer = (
         db.query(CustomerModel)

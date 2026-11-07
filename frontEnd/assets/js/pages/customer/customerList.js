@@ -1,9 +1,6 @@
 import {
     attachDelete,
-    emptyRow,
-    escapeHtml,
     fetchItems,
-    formatMoney,
     imageCell
 } from "../../utils/helpers.js"
 
@@ -15,18 +12,12 @@ export async function customerPage() {
 
     const tbody = document.getElementById("tbody")
 
-    attachDelete(tbody, "customer", render)
 
     async function render() {
         const items = await fetchItems("customer")
 
         if (!items.length) {
-            tbody.innerHTML = emptyRow(
-                11,
-                "fa-user-friends",
-                "No customers yet",
-                "Customer profiles added to the store will appear here."
-            )
+            main.innerHTML = "<p>Category not found.</p>"
             return
         }
 
@@ -36,14 +27,14 @@ export async function customerPage() {
             <tr>
                 <td>${serial++}</td>
                 <td>${imageCell(item.icon, item.name)}</td>
-                <td><strong>${escapeHtml(item.name)}</strong></td>
-                <td>${escapeHtml(item.email)}</td>
-                <td>${escapeHtml(item.phone)}</td>
-                <td>${escapeHtml(item.address)}</td>
-                <td>${escapeHtml(item.account_no)}</td>
-                <td>${formatMoney(item.opening_balance)}</td>
-                <td>${formatMoney(item.discount)}</td>
-                <td>${formatMoney(item.taxable)}</td>
+                <td><strong>${item.name}</strong></td>
+                <td>${item.email}</td>
+                <td>${item.phone}</td>
+                <td>${item.address}</td>
+                <td>${item.account_no}</td>
+                <td>${(item.opening_balance||0).toFixed(2)}</td>
+                <td>${(item.discount||0).toFixed(2)}</td>
+                <td>${(item.taxable||0).toFixed(2)}</td>
                 <td class="text-center">
                     <a class="btn table-action table-action-edit" href="#/customer/update?id=${item.id}" title="Edit">
                         <i class="fas fa-edit"></i>
@@ -54,6 +45,8 @@ export async function customerPage() {
                 </td>
             </tr>
         `).join("")
+
+        attachDelete(tbody, "customer", render)
     }
 
     render()

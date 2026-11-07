@@ -1,8 +1,5 @@
 import {
-    imagePreview,
     loadRecord,
-    setValue,
-    showNotFound,
     updateRecord
 } from "../../utils/helpers.js"
 
@@ -16,20 +13,26 @@ export async function customerUpdatePage(params) {
     const customer = await loadRecord("customer", id)
 
     if (!customer) {
-        showNotFound(main)
+        main.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <strong>Record not found</strong>
+                <span>The requested record could not be found.</span>
+            </div>
+        `
         return
     }
 
     document.getElementById("customerId").value = customer.id
-    setValue("name", customer.name)
-    setValue("email", customer.email)
-    setValue("phone", customer.phone)
-    setValue("address", customer.address)
-    setValue("account_no", customer.account_no)
-    setValue("opening_balance", customer.opening_balance)
-    setValue("discount", customer.discount)
-    setValue("taxable", customer.taxable)
-    imagePreview("imagePreview", customer.icon)
+    document.getElementById("name").value = customer.name ?? ""
+    document.getElementById("email").value = customer.email ?? ""
+    document.getElementById("phone").value = customer.phone ?? ""
+    document.getElementById("address").value = customer.address ?? ""
+    document.getElementById("account_no").value = customer.account_no ?? ""
+    document.getElementById("opening_balance").value = customer.opening_balance ?? ""
+    document.getElementById("discount").value = customer.discount ?? ""
+    document.getElementById("taxable").value = customer.taxable ?? ""
+    document.getElementById("imagePreview").src = `http://127.0.0.1:5500/${customer.icon}`
 
     const form = document.getElementById("submitForm")
 

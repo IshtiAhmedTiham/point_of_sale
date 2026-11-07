@@ -252,3 +252,4 @@ $RECYCLE.BIN/
 # Uploaded & deleted files
 uploads/
 deleted_file/
+.env

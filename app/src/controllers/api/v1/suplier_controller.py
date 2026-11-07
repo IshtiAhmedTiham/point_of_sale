@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import Annotated
+from typing import Annotated, cast
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
@@ -14,7 +14,7 @@ from fastapi import (
     Query
 )
 
-from app.src.config.database import get_db
+from app.src.config.database import get_db, DbSession
 from app.src.models.brand_model import BrandModel
 from app.src.models.suplier_model import SuplierModel
 from app.src.filters.suplier_filters import SuplierFilters
@@ -30,10 +30,10 @@ from app.src.schemas.suplier_schema import (
 router = APIRouter()
 
 
-@router.post("", response_model=ResponseSuplier, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ResponseSuplier, status_code=status.HTTP_201_CREATED)
 def create_suplier(
-    data : CreateSuplier = Depends(validate_suplier), 
-    db : Session = Depends(get_db)
+    db : DbSession,
+    data : CreateSuplier = Depends(validate_suplier)
 ):
     brand = (
         db.query(BrandModel)
@@ -74,10 +74,10 @@ def create_suplier(
 
 
 
-@router.get("", response_model=Page[ResponseSuplier], status_code=status.HTTP_200_OK)
+@router.get("/", response_model=Page[ResponseSuplier], status_code=status.HTTP_200_OK)
 def read_suplier(
-    filters : Annotated[SuplierFilters, Query()] = None, 
-    db : Session = Depends(get_db)
+    db : DbSession,
+    filters : Annotated[SuplierFilters, Query()]
 ):
     suplier = (
         db.query(SuplierModel)
@@ -96,9 +96,9 @@ def read_suplier(
 
 @router.put("/{id}", response_model=ResponseSuplier, status_code=status.HTTP_200_OK)
 def update_suplier(
+    db : DbSession,
     id : int, 
-    data : CreateSuplier = Depends(create_suplier_form), 
-    db : Session = Depends(get_db)
+    data : CreateSuplier = Depends(create_suplier_form)
 ):
     suplier = (
         db.query(SuplierModel)
@@ -109,8 +109,8 @@ def update_suplier(
         .first()
     )
     if not suplier:
-        file_path = data.image
-        os.remove(f"{file_path}")
+        if data.image and os.path.exists(data.image):
+            os.remove(data.image)
 
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
@@ -127,15 +127,19 @@ def update_suplier(
         .first()
     )
     if not brand:
+        if data.image and os.path.exists(data.image):
+            os.remove(data.image)
+
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Brand not found"
         )
 
-    old_file_path = suplier.image
+    old_file_path = cast(str, suplier.image)
+    new_file_path = cast(str, data.image)
 
     try:
-        update_data = data.model_dump(exclude={"brand_name"})
+        update_data = data.model_dump(exclude={"brand_name", "image"})
         for key,value in update_data.items():
             setattr(suplier, key, value)
 
@@ -144,7 +148,8 @@ def update_suplier(
         db.commit()
         db.refresh(suplier)
 
-        os.remove(f"{old_file_path}")
+        if new_file_path:
+            data.image = new_file_path
 
         return suplier
     
@@ -157,8 +162,8 @@ def update_suplier(
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
 def delete_suplier(
-    id : int, 
-    db : Session = Depends(get_db)
+    db : DbSession,
+    id : int
 ):
     suplier = (
         db.query(SuplierModel)
@@ -173,7 +178,6 @@ def delete_suplier(
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Suplier not found"
         )
-
 
     try:
         file_path = suplier.image

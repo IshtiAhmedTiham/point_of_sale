@@ -1,9 +1,3 @@
-function errorText(error, fallback) {
-    if (typeof error.detail === "string") return error.detail
-    if (Array.isArray(error.detail)) return error.detail.map((item) => item.msg).join(", ")
-    return fallback
-}
-
 export async function categoryCreatePage() {
     let categoryContent = await fetch("pages/category/create.html")
 
@@ -11,32 +5,22 @@ export async function categoryCreatePage() {
     main.innerHTML = await categoryContent.text()
 
     let form = document.getElementById("submitForm")
-    let message = document.getElementById("message")
-    let submitButton = document.getElementById("submitButton")
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault()
 
-        submitButton.disabled = true
-        message.textContent = ""
+        let formData = new FormData(form)
 
-        try {
-            let formData = new FormData(form)
+        let response = await fetch("http://127.0.0.1:8000/api/v1/category/", {
+            method: "POST",
+            body: formData
+        })
 
-            let response = await fetch("http://127.0.0.1:8000/api/v1/category/", {
-                method: "POST",
-                body: formData
-            })
-
-            if (!response.ok) {
-                let error = await response.json().catch(() => ({}))
-                message.textContent = errorText(error, "Category creation failed")
-                return
-            }
-
+        if (response.ok) {
             window.location.hash = "#/category"
-        } finally {
-            submitButton.disabled = false
+        }else{
+            alert("Category Creation successfully fail")
         }
+
     })
 }

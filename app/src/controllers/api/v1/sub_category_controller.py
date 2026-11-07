@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import Annotated
+from typing import Annotated,cast
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
@@ -14,7 +14,7 @@ from fastapi import (
     Query
 )
 
-from app.src.config.database import get_db
+from app.src.config.database import get_db, DbSession
 from app.src.models.category_model import CategoryModel
 from app.src.models.sub_category_model import SubCategoryModel
 from app.src.filters.sub_category_filters import SubCategoryFilter
@@ -23,8 +23,10 @@ from app.src.validators.sub_category_validator import validate_unique_code
 from app.src.utils.files import delete_file
 from app.src.schemas.sub_category_schema import (
     CreateSubCategory, 
+    UpdateSubCategory,
     ResponseSubCategory, 
-    create_sub_category_form
+    create_sub_category_form,
+    update_sub_category_form
 )
 
 
@@ -33,8 +35,8 @@ router = APIRouter()
 
 @router.post("", response_model = ResponseSubCategory, status_code=status.HTTP_201_CREATED)
 def create_sub_category(
-    data : CreateSubCategory = Depends(validate_unique_code), 
-    db : Session = Depends(get_db)
+    db : DbSession,
+    data : CreateSubCategory = Depends(validate_unique_code)
 ):
     category = (
         db.query(CategoryModel)
@@ -76,13 +78,16 @@ def create_sub_category(
 
 @router.get("", response_model = Page[ResponseSubCategory], status_code = status.HTTP_200_OK)
 def read_sub_category(
-    filters : Annotated[SubCategoryFilter, Query()] = None, 
-    db : Session = Depends(get_db)
+    db : DbSession,
+    filters : Annotated[SubCategoryFilter, Query()]
 ):
     sub_category = (
         db.query(SubCategoryModel)
         .filter(SubCategoryModel.deleted_at.is_(None))
     )
+
+    if filters.id:
+        sub_category = sub_category.filter(SubCategoryModel.id == filters.id)
 
     if filters.name:
         sub_category = sub_category.filter(SubCategoryModel.name.like(f"%{filters.name}%"))
@@ -96,9 +101,9 @@ def read_sub_category(
 
 @router.put("/{id}", response_model=ResponseSubCategory, status_code=status.HTTP_200_OK)
 def update_sub_category(
+    db : DbSession,
     id: int, 
-    data : CreateSubCategory = Depends(create_sub_category_form), 
-    db : Session = Depends(get_db)
+    data : UpdateSubCategory = Depends(update_sub_category_form)
 ):
     sub_category = (
         db.query(SubCategoryModel)
@@ -108,7 +113,11 @@ def update_sub_category(
             )
         .first()
     )
+
     if not sub_category:
+        if data.icon and os.path.exists(data.icon):
+            os.remove(data.icon)
+
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Data not found"
@@ -122,39 +131,50 @@ def update_sub_category(
         )
         .first()
     )
+
     if not category:
+        if data.icon and os.path.exists(data.icon):
+            os.remove(data.icon)
+            
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Category not found"
         )
 
-    file_path = sub_category.icon
+    old_file_path = cast(str, sub_category.icon)
+    new_file_path = cast(str, data.icon)
 
     try:
-        update_data = data.model_dump(exclude={"category_name"})
+        update_data = data.model_dump(exclude={"category_name", "icon"})
         for key,value in update_data.items():
             setattr(sub_category,key,value)
 
         sub_category.category_id = category.id
 
+        if new_file_path:
+            sub_category.icon = new_file_path
+
         db.commit()
         db.refresh(sub_category)
 
-        os.remove(f"{file_path}")
+        if (new_file_path and old_file_path) and os.path.exists(old_file_path):
+            os.remove(old_file_path)
 
         return sub_category
 
     except Exception:
         db.rollback()
-        os.remove(data.icon)
+
+        if new_file_path and os.path.exists(new_file_path):
+            os.remove(new_file_path)
         raise
 
     
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
 def delete_sub_category(
-    id : int, 
-    db : Session = Depends(get_db)
+    db : DbSession,
+    id : int
 ):
     sub_category = (
         db.query(SubCategoryModel)

@@ -1,6 +1,5 @@
 import os
-import shutil
-from typing import Annotated
+from typing import Annotated, cast
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session, selectinload
@@ -15,7 +14,7 @@ from fastapi import (
     BackgroundTasks
 )
 
-from app.src.config.database import get_db
+from app.src.config.database import get_db, DbSession
 from app.src.models.brand_model import BrandModel
 from app.src.models.suplier_model import SuplierModel
 from app.src.filters.brand_filters import BrandFilters
@@ -35,11 +34,11 @@ from app.src.schemas.brand_schema import (
 router = APIRouter()
 
 
-@router.post("", response_model=ResponseBrand, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ResponseBrand, status_code=status.HTTP_201_CREATED)
 def create_brand(
+    db : DbSession,
     background_tasks : BackgroundTasks, 
     data : CreateBrand = Depends(validators), 
-    db : Session = Depends(get_db)
 ):
     brand = BrandModel(
         name = data.name,
@@ -66,10 +65,10 @@ def create_brand(
 
 
 
-@router.get("", response_model=Page[ResponseBrand], status_code=status.HTTP_200_OK)
+@router.get("/", response_model=Page[ResponseBrand], status_code=status.HTTP_200_OK)
 def read_brand(
-    filters : Annotated[BrandFilters, Query()] = None,
-    db : Session = Depends(get_db)
+    db : DbSession,
+    filters : Annotated[BrandFilters, Query()]
 ):
     brand = (
         db.query(BrandModel)
@@ -89,10 +88,10 @@ def read_brand(
 
 @router.put("/{id}", response_model=ResponseBrand, status_code=status.HTTP_200_OK)
 def update_brand(
+    db : DbSession,
     background_tasks : BackgroundTasks, 
     id : int, 
-    data : CreateBrand = Depends(create_brand_form),  
-    db : Session = Depends(get_db)
+    data : CreateBrand = Depends(create_brand_form)  
 ):
     brand = (
         db.query(BrandModel)
@@ -103,24 +102,30 @@ def update_brand(
         .first()
     )
     if not brand:
+        if data.logo and os.path.exists(data.logo):
+            os.remove(data.logo)
+
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Data not found"
         )
 
-    file_path = brand.logo
+    old_logo = cast(str, brand.logo)
+    new_logo = cast(str, data.logo)
 
     try:
-        update_data = data.model_dump()
+        update_data = data.model_dump(exclude={"logo"})
         for key, value in update_data.items():
             setattr(brand, key, value)
 
-        brand.updated_at = datetime.now(timezone.utc)
+        if new_logo:
+            brand.logo = new_logo
 
         db.commit()
         db.refresh(brand)
 
-        os.remove(f"{file_path}")
+        if old_logo and (old_logo != brand.logo):
+            os.remove(old_logo)
 
     except Exception:
         db.rollback()
@@ -134,8 +139,9 @@ def update_brand(
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
 def delete_brand(
+    db : DbSession,
     background_task : BackgroundTasks, 
-    id : int, db : Session = Depends(get_db)
+    id : int 
 ):
     brand = (
         db.query(BrandModel)
@@ -175,7 +181,6 @@ def delete_brand(
         )
         .first()
     )
-    
     if suplier:
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,

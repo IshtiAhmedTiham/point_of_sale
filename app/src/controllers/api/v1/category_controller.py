@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import Annotated
+from typing import Annotated, cast
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session, selectinload
@@ -14,7 +14,7 @@ from fastapi import (
     HTTPException
 )
 
-from app.src.config.database import get_db
+from app.src.config.database import get_db,DbSession
 from app.src.models.category_model import CategoryModel
 from app.src.filters.category_filters import CategoryFilter
 from app.src.models.sub_category_model import SubCategoryModel
@@ -23,8 +23,10 @@ from app.src.validators.category_validator import validate_unique_code
 from app.src.utils.files import delete_file
 from app.src.schemas.category_schema import (
     CreateCategory, 
+    UpdateCategory,
     CategoryResponse, 
-    create_category_form
+    create_category_form,
+    update_category_form
 )
 
 
@@ -33,8 +35,8 @@ router = APIRouter()
 
 @router.post("/", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
 def create_category(
-    data : CreateCategory = Depends(validate_unique_code), 
-    db : Session = Depends(get_db)
+    db : DbSession,
+    data : CreateCategory = Depends(validate_unique_code) 
 ):
     category = CategoryModel(
         name = data.name,
@@ -61,8 +63,8 @@ def create_category(
 
 @router.get("/", response_model=Page[CategoryResponse], status_code=status.HTTP_200_OK)
 def read_category(
-    filters : Annotated[CategoryFilter,Query()] = None, 
-    db : Session = Depends(get_db)
+    db : DbSession,
+    filters : Annotated[CategoryFilter,Query()]
 ):
     category = (
         db.query(CategoryModel)
@@ -82,9 +84,9 @@ def read_category(
 
 @router.put("/{id}", response_model=CategoryResponse, status_code=status.HTTP_200_OK)
 def update_category(
+    db : DbSession,
     id : int, 
-    data : CreateCategory = Depends(create_category_form), 
-    db : Session = Depends(get_db)
+    data : UpdateCategory = Depends(update_category_form)
 ):
     category = (
         db.query(CategoryModel)
@@ -96,36 +98,46 @@ def update_category(
     )
 
     if not category:
+        if data.icon and os.path.exists(data.icon):
+            os.remove(data.icon)
+
         raise HTTPException(
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Data Not Found"
         )
     
-    file_path = category.icon
+    old_file_path = cast(str,category.icon)
+    new_file_path = cast(str,data.icon)
 
     try:
-        updated_data = data.model_dump()
+        updated_data = data.model_dump(exclude={"icon"})
         for key,value in updated_data.items():
             setattr(category,key,value)
+
+        if new_file_path:
+            category.icon = new_file_path
 
         db.commit()
         db.refresh(category)
 
-        os.remove(f"{file_path}")
+        if new_file_path and old_file_path and os.path.exists(old_file_path):
+            os.remove(old_file_path)
 
         return category
     
     except Exception:
         db.rollback()
-        os.remove(data.icon)
+
+        if new_file_path and os.path.exists(new_file_path):
+            os.remove(new_file_path)
         raise
 
 
 
 @router.delete("/{id}", status_code=status.HTTP_200_OK)
 def delete_category(
-    id : int, 
-    db : Session = Depends(get_db)
+    db : DbSession,
+    id : int
 ):
     category = (
         db.query(CategoryModel)

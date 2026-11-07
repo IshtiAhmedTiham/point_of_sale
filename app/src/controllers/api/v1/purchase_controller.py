@@ -1,4 +1,5 @@
 from random import randint
+from typing import cast
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
@@ -11,13 +12,13 @@ from fastapi import (
     HTTPException
 )
 
+from app.src.config.database import get_db, DbSession
+from app.src.models.brand_model import BrandModel
+from app.src.models.suplier_model import SuplierModel
+from app.src.models.purchase_stock_model import PurchaseStockModel
 from app.src.models.purchase_order_model import PurchaseOrderModel
 from app.src.models.purchase_billing_model import PurchaseBillingModel
-from app.src.models.purchase_stock_model import PurchaseStockModel
-from app.src.models.suplier_model import SuplierModel
 from app.src.models.product_template_model import ProductTemplateModel
-from app.src.models.brand_model import BrandModel
-from app.src.config.database import get_db
 from app.src.schemas.purchase_shema import (
     CreatePurchase,
     ResponsePurchase,
@@ -128,7 +129,7 @@ def create_purchase(
 
 
 @router.get("", response_model=Page[ResponsePurchase], status_code=status.HTTP_200_OK)
-def read_purchase(db : Session = Depends(get_db)):
+def read_purchase(db : DbSession):
     purchase = (
         db.query(PurchaseOrderModel)
         .filter(PurchaseOrderModel.deleted_at.is_(None))
@@ -145,9 +146,9 @@ def read_purchase(db : Session = Depends(get_db)):
 
 @router.put("/{id}", response_model=ResponsePurchase, status_code=status.HTTP_200_OK)
 def update_purchase(
+    db : DbSession,
     id : int,
-    data : CreatePurchase = Depends(create_purchase_form),
-    db : Session = Depends(get_db)
+    data : CreatePurchase = Depends(create_purchase_form)
 ):
     suplier = (
         db.query(SuplierModel)
@@ -211,6 +212,7 @@ def update_purchase(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Brand data not found"
         ) 
+
 
     updated_data = data.model_dump(
         exclude={

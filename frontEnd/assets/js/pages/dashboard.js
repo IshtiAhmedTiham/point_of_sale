@@ -11,29 +11,9 @@ const endpoints = {
     purchases: `${API_BASE}/purchase`
 }
 
-function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>"']/g, (char) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-    }[char]))
-}
-
 function toDate(value) {
     const date = new Date(value)
     return Number.isNaN(date.getTime()) ? null : date
-}
-
-function formatDate(value) {
-    const date = toDate(value)
-    if (!date) return "—"
-    return date.toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-        year: "numeric"
-    })
 }
 
 function formatNumber(value) {
@@ -183,14 +163,14 @@ function renderChart(purchases) {
 
     const dateLabels = points.map((point) => {
         const label = point.date.toLocaleDateString(undefined, { month: "short", day: "numeric" })
-        return `<text class="chart-axis-label" x="${point.x}" y="${height - 12}" text-anchor="middle">${escapeHtml(label)}</text>`
+        return `<text class="chart-axis-label" x="${point.x}" y="${height - 12}" text-anchor="middle">${label}</text>`
     }).join("")
 
     const circles = points.map((point) => {
         const label = point.date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
         return `
             <circle class="chart-point" cx="${point.x}" cy="${point.y}" r="3.5">
-                <title>${escapeHtml(label)}: ${formatNumber(point.value)}</title>
+                <title>${label}: ${formatNumber(point.value)}</title>
             </circle>
         `
     }).join("")
@@ -285,13 +265,14 @@ function renderRecentPurchases(data) {
         const supplier = suppliers.get(purchase.suplier_id) ?? `Supplier #${purchase.suplier_id}`
         const product = products.get(purchase.product_id) ?? `Product #${purchase.product_id}`
         const payment = purchase.purchase_billing?.payment_method ?? "—"
+        const purchaseDate = toDate(purchase.date)
 
         return `
             <tr>
-                <td>${formatDate(purchase.date)}</td>
-                <td><strong>${escapeHtml(supplier)}</strong></td>
-                <td>${escapeHtml(product)}</td>
-                <td><span class="payment-pill">${escapeHtml(payment)}</span></td>
+                <td>${purchaseDate ? purchaseDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "—"}</td>
+                <td><strong>${supplier}</strong></td>
+                <td>${product}</td>
+                <td><span class="payment-pill">${payment}</span></td>
                 <td>${formatNumber(purchaseAmount(purchase))}</td>
             </tr>
         `

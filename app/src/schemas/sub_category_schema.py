@@ -45,6 +45,40 @@ def create_sub_category_form(
 
 
 
+class UpdateSubCategory(BaseModel):
+    name : str
+    category_name : str
+    code : str
+    icon : Optional[str] = None
+    description : str
+    status : Optional[str] = "Active"
+
+
+
+def update_sub_category_form(
+    name : str = Form(...),
+    category_name : str = Form(...),
+    code : str = Form(...),
+    icon : Optional[UploadFile] = File(None),
+    description : str = Form(...),
+    status : str = Form("Active")
+):
+    file_path = None
+
+    if icon is not None and icon.filename:
+        file_path = save_file(icon, "sub_category")
+
+    return UpdateSubCategory(
+        name = name,
+        category_name = category_name,
+        code = code,
+        icon = file_path,
+        description = description,
+        status = status
+    )
+
+
+
 class ResponseSubCategory(BaseModel):
     id : int
     name : str
